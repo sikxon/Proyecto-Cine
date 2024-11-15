@@ -19,7 +19,6 @@
                 <li data-entity="salas">Salas</li>
                 <li data-entity="cines">Cines</li>
                 <li data-entity="funcion">Función</li>
-                <li data-entity="pelicula">Película</li>
                 <li data-entity="personaje">Personaje</li>
                 <li data-entity="actor">Actor</li>
                 <li data-entity="empleados">Empleados</li>
@@ -28,8 +27,30 @@
     </header>
 
     <main id="main-content">
+        <!-- Contenido dinámico cargado aquí -->
         <h2>Bienvenido al sistema de gestión de cine</h2>
         <p>Seleccione una entidad o consulta en la barra superior.</p>
     </main>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const mainContent = document.getElementById('main-content');
+
+        navbar.addEventListener('click', (event) => {
+            const entity = event.target.getAttribute('data-entity');
+            if (entity) {
+                // Cargar contenido dinámico para la entidad seleccionada
+                fetch(`entidades/${entity}.php`)
+                    .then(response => response.text())
+                    .then(html => {
+                        mainContent.innerHTML = html;
+                    })
+                    .catch(error => {
+                        mainContent.innerHTML = `<p>Error cargando la entidad: ${entity}</p>`;
+                        console.error(error);
+                    });
+            }
+        });
+    </script>
 </body>
 </html>
