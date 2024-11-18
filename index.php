@@ -40,13 +40,18 @@
             const entity = event.target.getAttribute('data-entity');
             if (entity) {
                 // Cargar contenido dinámico para la entidad seleccionada
-                fetch(`..crud/${entity}.php`)
-                    .then(response => response.text())
+                fetch(`crud/${entity}.php`) // Cambié la ruta para que sea válida.
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
                     .then(html => {
                         mainContent.innerHTML = html;
                     })
                     .catch(error => {
-                        mainContent.innerHTML = `<p>Error cargando la entidad: ${entity}</p>`;
+                        mainContent.innerHTML = `<p>Error cargando la entidad: ${entity}. Por favor, verifica que el archivo existe.</p>`;
                         console.error(error);
                     });
             }

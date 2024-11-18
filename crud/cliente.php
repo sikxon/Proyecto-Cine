@@ -1,10 +1,11 @@
 <?php
-include '../includes/header.php';
-include '../includes/db_connection.php';
+require_once '../db_connection.php';
+require_once '../config.php';
 
-// Insertar o actualizar datos según el formulario enviado
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['add'])) { // Agregar registro
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $action = $_POST['action'];
+
+    if ($action === "add") {
         $nombre = $_POST['nombre'];
         $apellido = $_POST['apellido'];
         $email = $_POST['email'];
@@ -12,18 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $direccion = $_POST['direccion'];
         $fechaDeNacimiento = $_POST['fechaDeNacimiento'];
 
-        $query = "INSERT INTO Cliente (Nombre, Apellido, Email, Telefono, Direccion, FechaDeNacimiento) 
-                  VALUES (:nombre, :apellido, :email, :telefono, :direccion, :fechaDeNacimiento)";
-        $stmt = $conn->prepare($query);
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':apellido', $apellido);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':telefono', $telefono);
-        $stmt->bindParam(':direccion', $direccion);
-        $stmt->bindParam(':fechaDeNacimiento', $fechaDeNacimiento);
-
-        $message = $stmt->execute() ? "Cliente agregado con éxito." : "Error al agregar el cliente.";
-    } elseif (isset($_POST['edit'])) { // Editar registro
+        $stmt = $conn->prepare("INSERT INTO Cliente (Nombre, Apellido, Email, Telefono, Direccion, FechaDeNacimiento) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $nombre, $apellido, $email, $telefono, $direccion, $fechaDeNacimiento);
+        $stmt->execute();
+        echo "Cliente añadido exitosamente.";
+    } elseif ($action === "edit") {
         $id = $_POST['id'];
         $nombre = $_POST['nombre'];
         $apellido = $_POST['apellido'];
@@ -32,48 +26,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $direccion = $_POST['direccion'];
         $fechaDeNacimiento = $_POST['fechaDeNacimiento'];
 
-        $query = "UPDATE Cliente 
-                  SET Nombre = :nombre, Apellido = :apellido, Email = :email, Telefono = :telefono, 
-                      Direccion = :direccion, FechaDeNacimiento = :fechaDeNacimiento 
-                  WHERE ID_Cliente = :id";
-        $stmt = $conn->prepare($query);
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':apellido', $apellido);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':telefono', $telefono);
-        $stmt->bindParam(':direccion', $direccion);
-        $stmt->bindParam(':fechaDeNacimiento', $fechaDeNacimiento);
+        $stmt = $conn->prepare("UPDATE Cliente SET Nombre = ?, Apellido = ?, Email = ?, Telefono = ?, Direccion = ?, FechaDeNacimiento = ? WHERE ID_Cliente = ?");
+        $stmt->bind_param("ssssssi", $nombre, $apellido, $email, $telefono, $direccion, $fechaDeNacimiento, $id);
+        $stmt->execute();
+        echo "Cliente actualizado exitosamente.";
+    } elseif ($action === "delete") {
+        $id = $_POST['id'];
 
-        $message = $stmt->execute() ? "Cliente actualizado con éxito." : "Error al actualizar el cliente.";
+        $stmt = $conn->prepare("DELETE FROM Cliente WHERE ID_Cliente = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        echo "Cliente eliminado exitosamente.";
     }
 }
 
-// Eliminar registro
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['delete'])) {
-    $id = $_GET['delete'];
-    $query = "DELETE FROM Cliente WHERE ID_Cliente = :id";
-    $stmt = $conn->prepare($query);
-    $stmt->bindParam(':id', $id);
-
-    $message = $stmt->execute() ? "Cliente eliminado con éxito." : "Error al eliminar el cliente.";
-}
-
-// Obtener todos los registros
-$query = "SELECT * FROM Cliente";
-$stmt = $conn->query($query);
-$clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$result = $conn->query("SELECT * FROM Cliente");
 ?>
 
-<h2>Gestión de Clientes</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Clientes</title>
+</head>
+<body>
+    <h1>CRUD de Clientes</h1>
 
-<?php if (isset($message)): ?>
-    <p><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+    <!-- Formulario para agregar clientes -->
+    <form method="POST">
+        <input type="hidden" name="action" value="add">
+        <input type="text" name="nombre" placeholder="Nombre" required>
+        <input type="text" name="apellido" placeholder="Apellido" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="telefono" placeholder="Teléfono" required>
+        <input type="text" name="direccion" placeholder="Dirección" required>
+        <input type="date" name="fechaDeNacimiento" required>
+        <button type="submit">Añadir Cliente</button>
+    </form>
 
-<!-- Mostrar registros -->
-<table>
-    <thead>
+    <h2>Lista de Clientes</h2>
+    <table border="1">
         <tr>
             <th>ID</th>
             <th>Nombre</th>
@@ -84,43 +77,49 @@ $clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <th>Fecha de Nacimiento</th>
             <th>Acciones</th>
         </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($clientes as $cliente): ?>
-        <tr>
-            <td><?= htmlspecialchars($cliente['ID_Cliente']) ?></td>
-            <td><?= htmlspecialchars($cliente['Nombre']) ?></td>
-            <td><?= htmlspecialchars($cliente['Apellido']) ?></td>
-            <td><?= htmlspecialchars($cliente['Email']) ?></td>
-            <td><?= htmlspecialchars($cliente['Telefono']) ?></td>
-            <td><?= htmlspecialchars($cliente['Direccion']) ?></td>
-            <td><?= htmlspecialchars($cliente['FechaDeNacimiento']) ?></td>
-            <td>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="id" value="<?= $cliente['ID_Cliente'] ?>">
-                    <input type="text" name="nombre" value="<?= $cliente['Nombre'] ?>" required>
-                    <input type="text" name="apellido" value="<?= $cliente['Apellido'] ?>" required>
-                    <input type="email" name="email" value="<?= $cliente['Email'] ?>" required>
-                    <input type="text" name="telefono" value="<?= $cliente['Telefono'] ?>" required>
-                    <input type="text" name="direccion" value="<?= $cliente['Direccion'] ?>" required>
-                    <input type="date" name="fechaDeNacimiento" value="<?= $cliente['FechaDeNacimiento'] ?>" required>
-                    <button type="submit" name="edit">Editar</button>
-                </form>
-                <a href="?delete=<?= $cliente['ID_Cliente'] ?>" onclick="return confirm('¿Estás seguro de eliminar este cliente?')">Eliminar</a>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
+            <tr>
+                <td><?= htmlspecialchars($row['ID_Cliente']) ?></td>
+                <td><?= htmlspecialchars($row['Nombre']) ?></td>
+                <td><?= htmlspecialchars($row['Apellido']) ?></td>
+                <td><?= htmlspecialchars($row['Email']) ?></td>
+                <td><?= htmlspecialchars($row['Telefono']) ?></td>
+                <td><?= htmlspecialchars($row['Direccion']) ?></td>
+                <td><?= htmlspecialchars($row['FechaDeNacimiento']) ?></td>
+                <td>
+                    <!-- Botón para eliminar -->
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="<?= $row['ID_Cliente'] ?>">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                    <!-- Botón para editar -->
+                    <button onclick="editClient(<?= $row['ID_Cliente'] ?>, '<?= $row['Nombre'] ?>', '<?= $row['Apellido'] ?>', '<?= $row['Email'] ?>', '<?= $row['Telefono'] ?>', '<?= $row['Direccion'] ?>', '<?= $row['FechaDeNacimiento'] ?>')">Editar</button>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+    </table>
 
-<!-- Formulario para agregar un registro -->
-<form method="POST">
-    <h3>Agregar Cliente</h3>
-    <input type="text" name="nombre" placeholder="Nombre" required>
-    <input type="text" name="apellido" placeholder="Apellido" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="text" name="telefono" placeholder="Teléfono" required>
-    <input type="text" name="direccion" placeholder="Dirección" required>
-    <input type="date" name="fechaDeNacimiento" required>
-    <button type="submit" name="add">Agregar</button>
-</form>
+    <script>
+        function editClient(id, nombre, apellido, email, telefono, direccion, fecha) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+
+            form.innerHTML = `
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="id" value="${id}">
+                <input type="text" name="nombre" value="${nombre}" required>
+                <input type="text" name="apellido" value="${apellido}" required>
+                <input type="email" name="email" value="${email}" required>
+                <input type="text" name="telefono" value="${telefono}" required>
+                <input type="text" name="direccion" value="${direccion}" required>
+                <input type="date" name="fechaDeNacimiento" value="${fecha}" required>
+                <button type="submit">Actualizar</button>
+            `;
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</body>
+</html>
