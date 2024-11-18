@@ -1,5 +1,6 @@
 <?php
-require_once 'db_connection.php';
+require_once '../db_connection.php';
+require_once '../config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
@@ -72,7 +73,7 @@ $result = $conn->query("SELECT * FROM Actor");
             <th>País de Origen</th>
             <th>Acciones</th>
         </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
                 <td><?= $row['DNI_Actor'] ?></td>
                 <td><?= $row['sexo'] ?></td>
