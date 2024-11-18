@@ -1,35 +1,60 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $nombre = $_POST['nombre'];
+    try {
+        if ($action == "add") {
+            // Agregar Género
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("INSERT INTO Genero (Nombre) VALUES (?)");
-        $stmt->bind_param("s", $nombre);
-        $stmt->execute();
-        echo "Género añadido exitosamente.";
-    } elseif ($action == "edit") {
-        $id_genero = $_POST['id_genero'];
-        $nombre = $_POST['nombre'];
+            if ($nombre) {
+                $stmt = $conn->prepare("INSERT INTO Genero (Nombre) VALUES (:nombre)");
+                $stmt->execute([':nombre' => $nombre]);
+                echo "Género añadido exitosamente.";
+            } else {
+                echo "El nombre del género es inválido.";
+            }
+        } elseif ($action == "edit") {
+            // Editar Género
+            $id_genero = filter_input(INPUT_POST, 'id_genero', FILTER_VALIDATE_INT);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("UPDATE Genero SET Nombre = ? WHERE ID_Genero = ?");
-        $stmt->bind_param("si", $nombre, $id_genero);
-        $stmt->execute();
-        echo "Género actualizado exitosamente.";
-    } elseif ($action == "delete") {
-        $id_genero = $_POST['id_genero'];
+            if ($id_genero && $nombre) {
+                $stmt = $conn->prepare("UPDATE Genero SET Nombre = :nombre WHERE ID_Genero = :id_genero");
+                $stmt->execute([
+                    ':nombre' => $nombre,
+                    ':id_genero' => $id_genero
+                ]);
+                echo "Género actualizado exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "delete") {
+            // Eliminar Género
+            $id_genero = filter_input(INPUT_POST, 'id_genero', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Genero WHERE ID_Genero = ?");
-        $stmt->bind_param("i", $id_genero);
-        $stmt->execute();
-        echo "Género eliminado exitosamente.";
+            if ($id_genero) {
+                $stmt = $conn->prepare("DELETE FROM Genero WHERE ID_Genero = :id_genero");
+                $stmt->execute([':id_genero' => $id_genero]);
+                echo "Género eliminado exitosamente.";
+            } else {
+                echo "ID de género inválido.";
+            }
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Genero");
+// Consultar todos los géneros
+try {
+    $result = $conn->query("SELECT * FROM Genero");
+} catch (PDOException $e) {
+    echo "Error al consultar los géneros: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -58,17 +83,17 @@ $result = $conn->query("SELECT * FROM Genero");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_Genero'] ?></td>
-                <td><?= $row['Nombre'] ?></td>
+                <td><?= htmlspecialchars($row['ID_Genero']) ?></td>
+                <td><?= htmlspecialchars($row['Nombre']) ?></td>
                 <td>
                     <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_genero" value="<?= $row['ID_Genero'] ?>">
+                        <input type="hidden" name="id_genero" value="<?= htmlspecialchars($row['ID_Genero']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
                     <!-- Botón para editar -->
-                    <button onclick="editGenero(<?= $row['ID_Genero'] ?>, '<?= $row['Nombre'] ?>')">Editar</button>
+                    <button onclick="editGenero(<?= htmlspecialchars($row['ID_Genero']) ?>, '<?= htmlspecialchars($row['Nombre']) ?>')">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>

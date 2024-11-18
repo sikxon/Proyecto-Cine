@@ -1,41 +1,77 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $inicio = $_POST['inicio'];
-        $fin = $_POST['fin'];
-        $id_pelicula = $_POST['id_pelicula'];
-        $id_salas = $_POST['id_salas'];
+    try {
+        if ($action == "add") {
+            // Agregar Función
+            $inicio = $_POST['inicio'];
+            $fin = $_POST['fin'];
+            $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
+            $id_salas = filter_input(INPUT_POST, 'id_salas', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("INSERT INTO Funcion (Inicio, Fin, ID_Pelicula, ID_Salas) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssii", $inicio, $fin, $id_pelicula, $id_salas);
-        $stmt->execute();
-        echo "Función añadida exitosamente.";
-    } elseif ($action == "edit") {
-        $id_programacion = $_POST['id_programacion'];
-        $inicio = $_POST['inicio'];
-        $fin = $_POST['fin'];
-        $id_pelicula = $_POST['id_pelicula'];
-        $id_salas = $_POST['id_salas'];
+            if ($inicio && $fin && $id_pelicula && $id_salas) {
+                $stmt = $conn->prepare("INSERT INTO Funcion (Inicio, Fin, ID_Pelicula, ID_Salas) 
+                                        VALUES (:inicio, :fin, :id_pelicula, :id_salas)");
+                $stmt->execute([
+                    ':inicio' => $inicio,
+                    ':fin' => $fin,
+                    ':id_pelicula' => $id_pelicula,
+                    ':id_salas' => $id_salas
+                ]);
+                echo "Función añadida exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "edit") {
+            // Editar Función
+            $id_programacion = filter_input(INPUT_POST, 'id_programacion', FILTER_VALIDATE_INT);
+            $inicio = $_POST['inicio'];
+            $fin = $_POST['fin'];
+            $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
+            $id_salas = filter_input(INPUT_POST, 'id_salas', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("UPDATE Funcion SET Inicio = ?, Fin = ?, ID_Pelicula = ?, ID_Salas = ? WHERE ID_Programacion = ?");
-        $stmt->bind_param("ssiii", $inicio, $fin, $id_pelicula, $id_salas, $id_programacion);
-        $stmt->execute();
-        echo "Función actualizada exitosamente.";
-    } elseif ($action == "delete") {
-        $id_programacion = $_POST['id_programacion'];
+            if ($id_programacion && $inicio && $fin && $id_pelicula && $id_salas) {
+                $stmt = $conn->prepare("UPDATE Funcion 
+                                        SET Inicio = :inicio, Fin = :fin, ID_Pelicula = :id_pelicula, ID_Salas = :id_salas 
+                                        WHERE ID_Programacion = :id_programacion");
+                $stmt->execute([
+                    ':inicio' => $inicio,
+                    ':fin' => $fin,
+                    ':id_pelicula' => $id_pelicula,
+                    ':id_salas' => $id_salas,
+                    ':id_programacion' => $id_programacion
+                ]);
+                echo "Función actualizada exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "delete") {
+            // Eliminar Función
+            $id_programacion = filter_input(INPUT_POST, 'id_programacion', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Funcion WHERE ID_Programacion = ?");
-        $stmt->bind_param("i", $id_programacion);
-        $stmt->execute();
-        echo "Función eliminada exitosamente.";
+            if ($id_programacion) {
+                $stmt = $conn->prepare("DELETE FROM Funcion WHERE ID_Programacion = :id_programacion");
+                $stmt->execute([':id_programacion' => $id_programacion]);
+                echo "Función eliminada exitosamente.";
+            } else {
+                echo "ID inválido.";
+            }
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Funcion");
+// Consultar todas las funciones
+try {
+    $result = $conn->query("SELECT * FROM Funcion");
+} catch (PDOException $e) {
+    echo "Error al consultar las funciones: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,6 +84,7 @@ $result = $conn->query("SELECT * FROM Funcion");
 <body>
     <h1>CRUD de Funciones</h1>
 
+    <!-- Formulario para agregar función -->
     <form method="POST">
         <input type="hidden" name="action" value="add">
         <input type="datetime-local" name="inicio" placeholder="Inicio de Función" required>
@@ -69,18 +106,25 @@ $result = $conn->query("SELECT * FROM Funcion");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_Programacion'] ?></td>
-                <td><?= $row['Inicio'] ?></td>
-                <td><?= $row['Fin'] ?></td>
-                <td><?= $row['ID_Pelicula'] ?></td>
-                <td><?= $row['ID_Salas'] ?></td>
+                <td><?= htmlspecialchars($row['ID_Programacion']) ?></td>
+                <td><?= htmlspecialchars($row['Inicio']) ?></td>
+                <td><?= htmlspecialchars($row['Fin']) ?></td>
+                <td><?= htmlspecialchars($row['ID_Pelicula']) ?></td>
+                <td><?= htmlspecialchars($row['ID_Salas']) ?></td>
                 <td>
+                    <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_programacion" value="<?= $row['ID_Programacion'] ?>">
+                        <input type="hidden" name="id_programacion" value="<?= htmlspecialchars($row['ID_Programacion']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
-                    <button onclick="editFuncion(<?= $row['ID_Programacion'] ?>, '<?= $row['Inicio'] ?>', '<?= $row['Fin'] ?>', <?= $row['ID_Pelicula'] ?>, <?= $row['ID_Salas'] ?>)">Editar</button>
+                    <!-- Botón para editar -->
+                    <button onclick="editFuncion(
+                        <?= htmlspecialchars($row['ID_Programacion']) ?>, 
+                        '<?= htmlspecialchars($row['Inicio']) ?>', 
+                        '<?= htmlspecialchars($row['Fin']) ?>', 
+                        <?= htmlspecialchars($row['ID_Pelicula']) ?>, 
+                        <?= htmlspecialchars($row['ID_Salas']) ?>)">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>

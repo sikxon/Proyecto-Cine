@@ -1,46 +1,85 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $action = $_POST['action'];
 
-    if ($action === "add") {
-        $nombre = $_POST['nombre'];
-        $apellido = $_POST['apellido'];
-        $email = $_POST['email'];
-        $telefono = $_POST['telefono'];
-        $direccion = $_POST['direccion'];
-        $fechaDeNacimiento = $_POST['fechaDeNacimiento'];
+    try {
+        if ($action === "add") {
+            // Agregar cliente
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
+            $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+            $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
+            $direccion = filter_input(INPUT_POST, 'direccion', FILTER_SANITIZE_STRING);
+            $fechaDeNacimiento = filter_input(INPUT_POST, 'fechaDeNacimiento', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("INSERT INTO Cliente (Nombre, Apellido, Email, Telefono, Direccion, FechaDeNacimiento) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $nombre, $apellido, $email, $telefono, $direccion, $fechaDeNacimiento);
-        $stmt->execute();
-        echo "Cliente añadido exitosamente.";
-    } elseif ($action === "edit") {
-        $id = $_POST['id'];
-        $nombre = $_POST['nombre'];
-        $apellido = $_POST['apellido'];
-        $email = $_POST['email'];
-        $telefono = $_POST['telefono'];
-        $direccion = $_POST['direccion'];
-        $fechaDeNacimiento = $_POST['fechaDeNacimiento'];
+            if ($nombre && $apellido && $email && $telefono && $direccion && $fechaDeNacimiento) {
+                $stmt = $conn->prepare("INSERT INTO Cliente (Nombre, Apellido, Email, Telefono, Direccion, FechaDeNacimiento) 
+                                        VALUES (:nombre, :apellido, :email, :telefono, :direccion, :fechaDeNacimiento)");
+                $stmt->execute([
+                    ':nombre' => $nombre,
+                    ':apellido' => $apellido,
+                    ':email' => $email,
+                    ':telefono' => $telefono,
+                    ':direccion' => $direccion,
+                    ':fechaDeNacimiento' => $fechaDeNacimiento
+                ]);
+                echo "Cliente añadido exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action === "edit") {
+            // Editar cliente
+            $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
+            $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
+            $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
+            $direccion = filter_input(INPUT_POST, 'direccion', FILTER_SANITIZE_STRING);
+            $fechaDeNacimiento = filter_input(INPUT_POST, 'fechaDeNacimiento', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("UPDATE Cliente SET Nombre = ?, Apellido = ?, Email = ?, Telefono = ?, Direccion = ?, FechaDeNacimiento = ? WHERE ID_Cliente = ?");
-        $stmt->bind_param("ssssssi", $nombre, $apellido, $email, $telefono, $direccion, $fechaDeNacimiento, $id);
-        $stmt->execute();
-        echo "Cliente actualizado exitosamente.";
-    } elseif ($action === "delete") {
-        $id = $_POST['id'];
+            if ($id && $nombre && $apellido && $email && $telefono && $direccion && $fechaDeNacimiento) {
+                $stmt = $conn->prepare("UPDATE Cliente 
+                                        SET Nombre = :nombre, Apellido = :apellido, Email = :email, Telefono = :telefono, Direccion = :direccion, FechaDeNacimiento = :fechaDeNacimiento 
+                                        WHERE ID_Cliente = :id");
+                $stmt->execute([
+                    ':id' => $id,
+                    ':nombre' => $nombre,
+                    ':apellido' => $apellido,
+                    ':email' => $email,
+                    ':telefono' => $telefono,
+                    ':direccion' => $direccion,
+                    ':fechaDeNacimiento' => $fechaDeNacimiento
+                ]);
+                echo "Cliente actualizado exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action === "delete") {
+            // Eliminar cliente
+            $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Cliente WHERE ID_Cliente = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        echo "Cliente eliminado exitosamente.";
+            if ($id) {
+                $stmt = $conn->prepare("DELETE FROM Cliente WHERE ID_Cliente = :id");
+                $stmt->execute([':id' => $id]);
+                echo "Cliente eliminado exitosamente.";
+            } else {
+                echo "ID inválido.";
+            }
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Cliente");
+// Consultar todos los clientes
+try {
+    $result = $conn->query("SELECT * FROM Cliente");
+} catch (PDOException $e) {
+    echo "Error al consultar los clientes: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -90,11 +129,19 @@ $result = $conn->query("SELECT * FROM Cliente");
                     <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id" value="<?= $row['ID_Cliente'] ?>">
+                        <input type="hidden" name="id" value="<?= htmlspecialchars($row['ID_Cliente']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
                     <!-- Botón para editar -->
-                    <button onclick="editClient(<?= $row['ID_Cliente'] ?>, '<?= $row['Nombre'] ?>', '<?= $row['Apellido'] ?>', '<?= $row['Email'] ?>', '<?= $row['Telefono'] ?>', '<?= $row['Direccion'] ?>', '<?= $row['FechaDeNacimiento'] ?>')">Editar</button>
+                    <button onclick="editClient(
+                        <?= htmlspecialchars($row['ID_Cliente']) ?>, 
+                        '<?= htmlspecialchars($row['Nombre']) ?>', 
+                        '<?= htmlspecialchars($row['Apellido']) ?>', 
+                        '<?= htmlspecialchars($row['Email']) ?>', 
+                        '<?= htmlspecialchars($row['Telefono']) ?>', 
+                        '<?= htmlspecialchars($row['Direccion']) ?>', 
+                        '<?= htmlspecialchars($row['FechaDeNacimiento']) ?>'
+                    )">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>

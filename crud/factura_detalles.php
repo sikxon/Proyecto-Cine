@@ -1,39 +1,73 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $cantidad_entradas = $_POST['cantidad_entradas'];
-        $precio_por_entrada = $_POST['precio_por_entrada'];
-        $subtotal = $_POST['subtotal'];
+    try {
+        if ($action == "add") {
+            // Agregar Factura Detalles
+            $cantidad_entradas = filter_input(INPUT_POST, 'cantidad_entradas', FILTER_VALIDATE_INT);
+            $precio_por_entrada = filter_input(INPUT_POST, 'precio_por_entrada', FILTER_VALIDATE_FLOAT);
+            $subtotal = filter_input(INPUT_POST, 'subtotal', FILTER_VALIDATE_FLOAT);
 
-        $stmt = $conn->prepare("INSERT INTO Factura_Detalles (CantidadDeEntradas, PrecioPorEntrada, Subtotal) VALUES (?, ?, ?)");
-        $stmt->bind_param("idd", $cantidad_entradas, $precio_por_entrada, $subtotal);
-        $stmt->execute();
-        echo "Factura Detalles añadida exitosamente.";
-    } elseif ($action == "edit") {
-        $id_facdet = $_POST['id_facdet'];
-        $cantidad_entradas = $_POST['cantidad_entradas'];
-        $precio_por_entrada = $_POST['precio_por_entrada'];
-        $subtotal = $_POST['subtotal'];
+            if ($cantidad_entradas && $precio_por_entrada && $subtotal) {
+                $stmt = $conn->prepare("INSERT INTO Factura_Detalles (CantidadDeEntradas, PrecioPorEntrada, Subtotal) 
+                                        VALUES (:cantidad_entradas, :precio_por_entrada, :subtotal)");
+                $stmt->execute([
+                    ':cantidad_entradas' => $cantidad_entradas,
+                    ':precio_por_entrada' => $precio_por_entrada,
+                    ':subtotal' => $subtotal
+                ]);
+                echo "Factura Detalles añadida exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "edit") {
+            // Editar Factura Detalles
+            $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
+            $cantidad_entradas = filter_input(INPUT_POST, 'cantidad_entradas', FILTER_VALIDATE_INT);
+            $precio_por_entrada = filter_input(INPUT_POST, 'precio_por_entrada', FILTER_VALIDATE_FLOAT);
+            $subtotal = filter_input(INPUT_POST, 'subtotal', FILTER_VALIDATE_FLOAT);
 
-        $stmt = $conn->prepare("UPDATE Factura_Detalles SET CantidadDeEntradas = ?, PrecioPorEntrada = ?, Subtotal = ? WHERE ID_FacDet = ?");
-        $stmt->bind_param("iddi", $cantidad_entradas, $precio_por_entrada, $subtotal, $id_facdet);
-        $stmt->execute();
-        echo "Factura Detalles actualizada exitosamente.";
-    } elseif ($action == "delete") {
-        $id_facdet = $_POST['id_facdet'];
+            if ($id_facdet && $cantidad_entradas && $precio_por_entrada && $subtotal) {
+                $stmt = $conn->prepare("UPDATE Factura_Detalles 
+                                        SET CantidadDeEntradas = :cantidad_entradas, PrecioPorEntrada = :precio_por_entrada, Subtotal = :subtotal 
+                                        WHERE ID_FacDet = :id_facdet");
+                $stmt->execute([
+                    ':cantidad_entradas' => $cantidad_entradas,
+                    ':precio_por_entrada' => $precio_por_entrada,
+                    ':subtotal' => $subtotal,
+                    ':id_facdet' => $id_facdet
+                ]);
+                echo "Factura Detalles actualizada exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "delete") {
+            // Eliminar Factura Detalles
+            $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Factura_Detalles WHERE ID_FacDet = ?");
-        $stmt->bind_param("i", $id_facdet);
-        $stmt->execute();
-        echo "Factura Detalles eliminada exitosamente.";
+            if ($id_facdet) {
+                $stmt = $conn->prepare("DELETE FROM Factura_Detalles WHERE ID_FacDet = :id_facdet");
+                $stmt->execute([':id_facdet' => $id_facdet]);
+                echo "Factura Detalles eliminada exitosamente.";
+            } else {
+                echo "ID inválido.";
+            }
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Factura_Detalles");
+// Consultar todas las facturas detalles
+try {
+    $result = $conn->query("SELECT * FROM Factura_Detalles");
+} catch (PDOException $e) {
+    echo "Error al consultar las facturas detalles: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -46,6 +80,7 @@ $result = $conn->query("SELECT * FROM Factura_Detalles");
 <body>
     <h1>CRUD de Factura Detalles</h1>
 
+    <!-- Formulario para agregar Factura Detalles -->
     <form method="POST">
         <input type="hidden" name="action" value="add">
         <input type="number" name="cantidad_entradas" placeholder="Cantidad de Entradas" required>
@@ -65,17 +100,23 @@ $result = $conn->query("SELECT * FROM Factura_Detalles");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_FacDet'] ?></td>
-                <td><?= $row['CantidadDeEntradas'] ?></td>
-                <td><?= $row['PrecioPorEntrada'] ?></td>
-                <td><?= $row['Subtotal'] ?></td>
+                <td><?= htmlspecialchars($row['ID_FacDet']) ?></td>
+                <td><?= htmlspecialchars($row['CantidadDeEntradas']) ?></td>
+                <td><?= htmlspecialchars($row['PrecioPorEntrada']) ?></td>
+                <td><?= htmlspecialchars($row['Subtotal']) ?></td>
                 <td>
+                    <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_facdet" value="<?= $row['ID_FacDet'] ?>">
+                        <input type="hidden" name="id_facdet" value="<?= htmlspecialchars($row['ID_FacDet']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
-                    <button onclick="editFacturaDetalles(<?= $row['ID_FacDet'] ?>, <?= $row['CantidadDeEntradas'] ?>, <?= $row['PrecioPorEntrada'] ?>, <?= $row['Subtotal'] ?>)">Editar</button>
+                    <!-- Botón para editar -->
+                    <button onclick="editFacturaDetalles(
+                        <?= htmlspecialchars($row['ID_FacDet']) ?>, 
+                        <?= htmlspecialchars($row['CantidadDeEntradas']) ?>, 
+                        <?= htmlspecialchars($row['PrecioPorEntrada']) ?>, 
+                        <?= htmlspecialchars($row['Subtotal']) ?>)">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>
@@ -101,4 +142,3 @@ $result = $conn->query("SELECT * FROM Factura_Detalles");
     </script>
 </body>
 </html>
-

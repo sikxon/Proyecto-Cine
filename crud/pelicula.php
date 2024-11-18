@@ -1,49 +1,81 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $titulo = $_POST['titulo'];
-        $anio = $_POST['anio'];
-        $clasificacion = $_POST['clasificacion'];
-        $director = $_POST['director'];
-        $productor = $_POST['productor'];
-        $idioma = $_POST['idioma'];
-        $calificacion = $_POST['calificacion'];
-        $duracion = $_POST['duracion'];
+    try {
+        if ($action == "add") {
+            // Agregar Película
+            $titulo = filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_STRING);
+            $anio = filter_input(INPUT_POST, 'anio', FILTER_SANITIZE_STRING);
+            $clasificacion = filter_input(INPUT_POST, 'clasificacion', FILTER_SANITIZE_STRING);
+            $director = filter_input(INPUT_POST, 'director', FILTER_SANITIZE_STRING);
+            $productor = filter_input(INPUT_POST, 'productor', FILTER_SANITIZE_STRING);
+            $idioma = filter_input(INPUT_POST, 'idioma', FILTER_SANITIZE_STRING);
+            $calificacion = filter_input(INPUT_POST, 'calificacion', FILTER_SANITIZE_STRING);
+            $duracion = filter_input(INPUT_POST, 'duracion', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("INSERT INTO Pelicula (titulo, Año_de_estreno, Clasificacion, Director, productor, idioma, Calificacion, Duracion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssss", $titulo, $anio, $clasificacion, $director, $productor, $idioma, $calificacion, $duracion);
-        $stmt->execute();
-        echo "Película añadida exitosamente.";
-    } elseif ($action == "edit") {
-        $id_pelicula = $_POST['id_pelicula'];
-        $titulo = $_POST['titulo'];
-        $anio = $_POST['anio'];
-        $clasificacion = $_POST['clasificacion'];
-        $director = $_POST['director'];
-        $productor = $_POST['productor'];
-        $idioma = $_POST['idioma'];
-        $calificacion = $_POST['calificacion'];
-        $duracion = $_POST['duracion'];
+            $stmt = $conn->prepare("INSERT INTO Pelicula (titulo, Año_de_estreno, Clasificacion, Director, productor, idioma, Calificacion, Duracion) 
+                                    VALUES (:titulo, :anio, :clasificacion, :director, :productor, :idioma, :calificacion, :duracion)");
+            $stmt->execute([
+                ':titulo' => $titulo,
+                ':anio' => $anio,
+                ':clasificacion' => $clasificacion,
+                ':director' => $director,
+                ':productor' => $productor,
+                ':idioma' => $idioma,
+                ':calificacion' => $calificacion,
+                ':duracion' => $duracion
+            ]);
+            echo "Película añadida exitosamente.";
+        } elseif ($action == "edit") {
+            // Editar Película
+            $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
+            $titulo = filter_input(INPUT_POST, 'titulo', FILTER_SANITIZE_STRING);
+            $anio = filter_input(INPUT_POST, 'anio', FILTER_SANITIZE_STRING);
+            $clasificacion = filter_input(INPUT_POST, 'clasificacion', FILTER_SANITIZE_STRING);
+            $director = filter_input(INPUT_POST, 'director', FILTER_SANITIZE_STRING);
+            $productor = filter_input(INPUT_POST, 'productor', FILTER_SANITIZE_STRING);
+            $idioma = filter_input(INPUT_POST, 'idioma', FILTER_SANITIZE_STRING);
+            $calificacion = filter_input(INPUT_POST, 'calificacion', FILTER_SANITIZE_STRING);
+            $duracion = filter_input(INPUT_POST, 'duracion', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("UPDATE Pelicula SET titulo = ?, Año_de_estreno = ?, Clasificacion = ?, Director = ?, productor = ?, idioma = ?, Calificacion = ?, Duracion = ? WHERE ID_Pelicula = ?");
-        $stmt->bind_param("ssssssssi", $titulo, $anio, $clasificacion, $director, $productor, $idioma, $calificacion, $duracion, $id_pelicula);
-        $stmt->execute();
-        echo "Película actualizada exitosamente.";
-    } elseif ($action == "delete") {
-        $id_pelicula = $_POST['id_pelicula'];
+            $stmt = $conn->prepare("UPDATE Pelicula SET titulo = :titulo, Año_de_estreno = :anio, Clasificacion = :clasificacion, 
+                                    Director = :director, productor = :productor, idioma = :idioma, Calificacion = :calificacion, 
+                                    Duracion = :duracion WHERE ID_Pelicula = :id_pelicula");
+            $stmt->execute([
+                ':titulo' => $titulo,
+                ':anio' => $anio,
+                ':clasificacion' => $clasificacion,
+                ':director' => $director,
+                ':productor' => $productor,
+                ':idioma' => $idioma,
+                ':calificacion' => $calificacion,
+                ':duracion' => $duracion,
+                ':id_pelicula' => $id_pelicula
+            ]);
+            echo "Película actualizada exitosamente.";
+        } elseif ($action == "delete") {
+            // Eliminar Película
+            $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Pelicula WHERE ID_Pelicula = ?");
-        $stmt->bind_param("i", $id_pelicula);
-        $stmt->execute();
-        echo "Película eliminada exitosamente.";
+            $stmt = $conn->prepare("DELETE FROM Pelicula WHERE ID_Pelicula = :id_pelicula");
+            $stmt->execute([':id_pelicula' => $id_pelicula]);
+            echo "Película eliminada exitosamente.";
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Pelicula");
+// Consultar todas las películas
+try {
+    $result = $conn->query("SELECT * FROM Pelicula");
+} catch (PDOException $e) {
+    echo "Error al consultar las películas: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -56,6 +88,7 @@ $result = $conn->query("SELECT * FROM Pelicula");
 <body>
     <h1>CRUD de Películas</h1>
 
+    <!-- Formulario para agregar películas -->
     <form method="POST">
         <input type="hidden" name="action" value="add">
         <input type="text" name="titulo" placeholder="Título" required>
@@ -85,22 +118,26 @@ $result = $conn->query("SELECT * FROM Pelicula");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_Pelicula'] ?></td>
-                <td><?= $row['titulo'] ?></td>
-                <td><?= $row['Año_de_estreno'] ?></td>
-                <td><?= $row['Clasificacion'] ?></td>
-                <td><?= $row['Director'] ?></td>
-                <td><?= $row['productor'] ?></td>
-                <td><?= $row['idioma'] ?></td>
-                <td><?= $row['Calificacion'] ?></td>
-                <td><?= $row['Duracion'] ?></td>
+                <td><?= htmlspecialchars($row['ID_Pelicula']) ?></td>
+                <td><?= htmlspecialchars($row['titulo']) ?></td>
+                <td><?= htmlspecialchars($row['Año_de_estreno']) ?></td>
+                <td><?= htmlspecialchars($row['Clasificacion']) ?></td>
+                <td><?= htmlspecialchars($row['Director']) ?></td>
+                <td><?= htmlspecialchars($row['productor']) ?></td>
+                <td><?= htmlspecialchars($row['idioma']) ?></td>
+                <td><?= htmlspecialchars($row['Calificacion']) ?></td>
+                <td><?= htmlspecialchars($row['Duracion']) ?></td>
                 <td>
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_pelicula" value="<?= $row['ID_Pelicula'] ?>">
+                        <input type="hidden" name="id_pelicula" value="<?= htmlspecialchars($row['ID_Pelicula']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
-                    <button onclick="editPelicula(<?= $row['ID_Pelicula'] ?>, '<?= $row['titulo'] ?>', '<?= $row['Año_de_estreno'] ?>', '<?= $row['Clasificacion'] ?>', '<?= $row['Director'] ?>', '<?= $row['productor'] ?>', '<?= $row['idioma'] ?>', '<?= $row['Calificacion'] ?>', '<?= $row['Duracion'] ?>')">Editar</button>
+                    <button onclick="editPelicula(<?= htmlspecialchars($row['ID_Pelicula']) ?>, '<?= htmlspecialchars($row['titulo']) ?>', 
+                        '<?= htmlspecialchars($row['Año_de_estreno']) ?>', '<?= htmlspecialchars($row['Clasificacion']) ?>', 
+                        '<?= htmlspecialchars($row['Director']) ?>', '<?= htmlspecialchars($row['productor']) ?>', 
+                        '<?= htmlspecialchars($row['idioma']) ?>', '<?= htmlspecialchars($row['Calificacion']) ?>', 
+                        '<?= htmlspecialchars($row['Duracion']) ?>')">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>
@@ -115,4 +152,19 @@ $result = $conn->query("SELECT * FROM Pelicula");
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="id_pelicula" value="${id}">
                 <input type="text" name="titulo" value="${titulo}" required>
-                <input type="date" name="anio" value="${ani
+                <input type="date" name="anio" value="${anio}" required>
+                <input type="text" name="clasificacion" value="${clasificacion}">
+                <input type="text" name="director" value="${director}" required>
+                <input type="text" name="productor" value="${productor}" required>
+                <input type="text" name="idioma" value="${idioma}" required>
+                <input type="text" name="calificacion" value="${calificacion}" required>
+                <input type="time" name="duracion" value="${duracion}" required>
+                <button type="submit">Actualizar</button>
+            `;
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</body>
+</html>

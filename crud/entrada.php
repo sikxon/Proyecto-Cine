@@ -1,41 +1,77 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $precio = $_POST['precio'];
-        $fecha_de_compra = $_POST['fecha_de_compra'];
-        $id_facdet = $_POST['id_facdet'];
-        $id_cliente = $_POST['id_cliente'];
+    try {
+        if ($action == "add") {
+            // Agregar entrada
+            $precio = filter_input(INPUT_POST, 'precio', FILTER_VALIDATE_FLOAT);
+            $fecha_de_compra = filter_input(INPUT_POST, 'fecha_de_compra', FILTER_SANITIZE_STRING);
+            $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
+            $id_cliente = filter_input(INPUT_POST, 'id_cliente', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("INSERT INTO Entrada (Precio, FechaDeCompra, ID_FacDet, ID_Cliente) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("dsii", $precio, $fecha_de_compra, $id_facdet, $id_cliente);
-        $stmt->execute();
-        echo "Entrada añadida exitosamente.";
-    } elseif ($action == "edit") {
-        $id_entrada = $_POST['id_entrada'];
-        $precio = $_POST['precio'];
-        $fecha_de_compra = $_POST['fecha_de_compra'];
-        $id_facdet = $_POST['id_facdet'];
-        $id_cliente = $_POST['id_cliente'];
+            if ($precio && $fecha_de_compra && $id_facdet && $id_cliente) {
+                $stmt = $conn->prepare("INSERT INTO Entrada (Precio, FechaDeCompra, ID_FacDet, ID_Cliente) 
+                                        VALUES (:precio, :fecha_de_compra, :id_facdet, :id_cliente)");
+                $stmt->execute([
+                    ':precio' => $precio,
+                    ':fecha_de_compra' => $fecha_de_compra,
+                    ':id_facdet' => $id_facdet,
+                    ':id_cliente' => $id_cliente
+                ]);
+                echo "Entrada añadida exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "edit") {
+            // Editar entrada
+            $id_entrada = filter_input(INPUT_POST, 'id_entrada', FILTER_VALIDATE_INT);
+            $precio = filter_input(INPUT_POST, 'precio', FILTER_VALIDATE_FLOAT);
+            $fecha_de_compra = filter_input(INPUT_POST, 'fecha_de_compra', FILTER_SANITIZE_STRING);
+            $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
+            $id_cliente = filter_input(INPUT_POST, 'id_cliente', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("UPDATE Entrada SET Precio = ?, FechaDeCompra = ?, ID_FacDet = ?, ID_Cliente = ? WHERE ID_Entrada = ?");
-        $stmt->bind_param("dsiii", $precio, $fecha_de_compra, $id_facdet, $id_cliente, $id_entrada);
-        $stmt->execute();
-        echo "Entrada actualizada exitosamente.";
-    } elseif ($action == "delete") {
-        $id_entrada = $_POST['id_entrada'];
+            if ($id_entrada && $precio && $fecha_de_compra && $id_facdet && $id_cliente) {
+                $stmt = $conn->prepare("UPDATE Entrada 
+                                        SET Precio = :precio, FechaDeCompra = :fecha_de_compra, ID_FacDet = :id_facdet, ID_Cliente = :id_cliente 
+                                        WHERE ID_Entrada = :id_entrada");
+                $stmt->execute([
+                    ':precio' => $precio,
+                    ':fecha_de_compra' => $fecha_de_compra,
+                    ':id_facdet' => $id_facdet,
+                    ':id_cliente' => $id_cliente,
+                    ':id_entrada' => $id_entrada
+                ]);
+                echo "Entrada actualizada exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "delete") {
+            // Eliminar entrada
+            $id_entrada = filter_input(INPUT_POST, 'id_entrada', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Entrada WHERE ID_Entrada = ?");
-        $stmt->bind_param("i", $id_entrada);
-        $stmt->execute();
-        echo "Entrada eliminada exitosamente.";
+            if ($id_entrada) {
+                $stmt = $conn->prepare("DELETE FROM Entrada WHERE ID_Entrada = :id_entrada");
+                $stmt->execute([':id_entrada' => $id_entrada]);
+                echo "Entrada eliminada exitosamente.";
+            } else {
+                echo "ID inválido.";
+            }
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Entrada");
+// Consultar todas las entradas
+try {
+    $result = $conn->query("SELECT * FROM Entrada");
+} catch (PDOException $e) {
+    echo "Error al consultar las entradas: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,6 +84,7 @@ $result = $conn->query("SELECT * FROM Entrada");
 <body>
     <h1>CRUD de Entrada</h1>
 
+    <!-- Formulario para agregar entrada -->
     <form method="POST">
         <input type="hidden" name="action" value="add">
         <input type="number" step="0.01" name="precio" placeholder="Precio" required>
@@ -69,18 +106,25 @@ $result = $conn->query("SELECT * FROM Entrada");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_Entrada'] ?></td>
-                <td><?= $row['Precio'] ?></td>
-                <td><?= $row['FechaDeCompra'] ?></td>
-                <td><?= $row['ID_FacDet'] ?></td>
-                <td><?= $row['ID_Cliente'] ?></td>
+                <td><?= htmlspecialchars($row['ID_Entrada']) ?></td>
+                <td><?= htmlspecialchars($row['Precio']) ?></td>
+                <td><?= htmlspecialchars($row['FechaDeCompra']) ?></td>
+                <td><?= htmlspecialchars($row['ID_FacDet']) ?></td>
+                <td><?= htmlspecialchars($row['ID_Cliente']) ?></td>
                 <td>
+                    <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_entrada" value="<?= $row['ID_Entrada'] ?>">
+                        <input type="hidden" name="id_entrada" value="<?= htmlspecialchars($row['ID_Entrada']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
-                    <button onclick="editEntrada(<?= $row['ID_Entrada'] ?>, <?= $row['Precio'] ?>, '<?= $row['FechaDeCompra'] ?>', <?= $row['ID_FacDet'] ?>, <?= $row['ID_Cliente'] ?>)">Editar</button>
+                    <!-- Botón para editar -->
+                    <button onclick="editEntrada(
+                        <?= htmlspecialchars($row['ID_Entrada']) ?>, 
+                        <?= htmlspecialchars($row['Precio']) ?>, 
+                        '<?= htmlspecialchars($row['FechaDeCompra']) ?>', 
+                        <?= htmlspecialchars($row['ID_FacDet']) ?>, 
+                        <?= htmlspecialchars($row['ID_Cliente']) ?>)">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>

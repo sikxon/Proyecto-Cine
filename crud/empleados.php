@@ -1,43 +1,81 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $sexo = $_POST['sexo'];
-        $apellido = $_POST['apellido'];
-        $nombre = $_POST['nombre'];
-        $edad = $_POST['edad'];
-        $pais_de_origen = $_POST['pais_de_origen'];
+    try {
+        if ($action == "add") {
+            // Agregar empleado
+            $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
+            $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
+            $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("INSERT INTO Empleados (sexo, apellido, nombre, edad, Pais_De_Origen) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssds", $sexo, $apellido, $nombre, $edad, $pais_de_origen);
-        $stmt->execute();
-        echo "Empleado añadido exitosamente.";
-    } elseif ($action == "edit") {
-        $id_empleados = $_POST['id_empleados'];
-        $sexo = $_POST['sexo'];
-        $apellido = $_POST['apellido'];
-        $nombre = $_POST['nombre'];
-        $edad = $_POST['edad'];
-        $pais_de_origen = $_POST['pais_de_origen'];
+            if ($sexo && $apellido && $nombre && $edad && $pais_de_origen) {
+                $stmt = $conn->prepare("INSERT INTO Empleados (sexo, apellido, nombre, edad, Pais_De_Origen) 
+                                        VALUES (:sexo, :apellido, :nombre, :edad, :pais_de_origen)");
+                $stmt->execute([
+                    ':sexo' => $sexo,
+                    ':apellido' => $apellido,
+                    ':nombre' => $nombre,
+                    ':edad' => $edad,
+                    ':pais_de_origen' => $pais_de_origen
+                ]);
+                echo "Empleado añadido exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "edit") {
+            // Editar empleado
+            $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
+            $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
+            $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
+            $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("UPDATE Empleados SET sexo = ?, apellido = ?, nombre = ?, edad = ?, Pais_De_Origen = ? WHERE ID_Empleados = ?");
-        $stmt->bind_param("sssdsi", $sexo, $apellido, $nombre, $edad, $pais_de_origen, $id_empleados);
-        $stmt->execute();
-        echo "Empleado actualizado exitosamente.";
-    } elseif ($action == "delete") {
-        $id_empleados = $_POST['id_empleados'];
+            if ($id_empleados && $sexo && $apellido && $nombre && $edad && $pais_de_origen) {
+                $stmt = $conn->prepare("UPDATE Empleados 
+                                        SET sexo = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, Pais_De_Origen = :pais_de_origen 
+                                        WHERE ID_Empleados = :id_empleados");
+                $stmt->execute([
+                    ':sexo' => $sexo,
+                    ':apellido' => $apellido,
+                    ':nombre' => $nombre,
+                    ':edad' => $edad,
+                    ':pais_de_origen' => $pais_de_origen,
+                    ':id_empleados' => $id_empleados
+                ]);
+                echo "Empleado actualizado exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "delete") {
+            // Eliminar empleado
+            $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Empleados WHERE ID_Empleados = ?");
-        $stmt->bind_param("i", $id_empleados);
-        $stmt->execute();
-        echo "Empleado eliminado exitosamente.";
+            if ($id_empleados) {
+                $stmt = $conn->prepare("DELETE FROM Empleados WHERE ID_Empleados = :id_empleados");
+                $stmt->execute([':id_empleados' => $id_empleados]);
+                echo "Empleado eliminado exitosamente.";
+            } else {
+                echo "ID inválido.";
+            }
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Empleados");
+// Consultar todos los empleados
+try {
+    $result = $conn->query("SELECT * FROM Empleados");
+} catch (PDOException $e) {
+    echo "Error al consultar los empleados: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -74,21 +112,28 @@ $result = $conn->query("SELECT * FROM Empleados");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_Empleados'] ?></td>
-                <td><?= $row['sexo'] ?></td>
-                <td><?= $row['apellido'] ?></td>
-                <td><?= $row['nombre'] ?></td>
-                <td><?= $row['edad'] ?></td>
-                <td><?= $row['Pais_De_Origen'] ?></td>
+                <td><?= htmlspecialchars($row['ID_Empleados']) ?></td>
+                <td><?= htmlspecialchars($row['sexo']) ?></td>
+                <td><?= htmlspecialchars($row['apellido']) ?></td>
+                <td><?= htmlspecialchars($row['nombre']) ?></td>
+                <td><?= htmlspecialchars($row['edad']) ?></td>
+                <td><?= htmlspecialchars($row['Pais_De_Origen']) ?></td>
                 <td>
                     <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_empleados" value="<?= $row['ID_Empleados'] ?>">
+                        <input type="hidden" name="id_empleados" value="<?= htmlspecialchars($row['ID_Empleados']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
                     <!-- Botón para editar -->
-                    <button onclick="editEmpleado(<?= $row['ID_Empleados'] ?>, '<?= $row['sexo'] ?>', '<?= $row['apellido'] ?>', '<?= $row['nombre'] ?>', <?= $row['edad'] ?>, '<?= $row['Pais_De_Origen'] ?>')">Editar</button>
+                    <button onclick="editEmpleado(
+                        <?= htmlspecialchars($row['ID_Empleados']) ?>, 
+                        '<?= htmlspecialchars($row['sexo']) ?>', 
+                        '<?= htmlspecialchars($row['apellido']) ?>', 
+                        '<?= htmlspecialchars($row['nombre']) ?>', 
+                        <?= htmlspecialchars($row['edad']) ?>, 
+                        '<?= htmlspecialchars($row['Pais_De_Origen']) ?>'
+                    )">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>

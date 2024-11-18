@@ -1,40 +1,55 @@
 <?php
-require_once '../db_connection.php';
-require_once '../config.php';
+require_once '../db_connection.php'; // Asegúrate de que este archivo esté configurado correctamente.
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $nombre_cine = $_POST['nombre_cine'];
-        $direccion = $_POST['direccion'];
-        $telefono = $_POST['telefono'];
-        $id_empleados = $_POST['id_empleados'];
+    try {
+        if ($action == "add") {
+            // Insertar cine
+            $nombre_cine = filter_input(INPUT_POST, 'nombre_cine', FILTER_SANITIZE_STRING);
+            $direccion = filter_input(INPUT_POST, 'direccion', FILTER_SANITIZE_STRING);
+            $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
+            $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("INSERT INTO Cine (nombre_cine, Direccion, telefono, ID_Empleados) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("sssi", $nombre_cine, $direccion, $telefono, $id_empleados);
-        $stmt->execute();
-        echo "Cine añadido exitosamente.";
-    } elseif ($action == "edit") {
-        $id_cine = $_POST['id_cine'];
-        $nombre_cine = $_POST['nombre_cine'];
-        $direccion = $_POST['direccion'];
-        $telefono = $_POST['telefono'];
-        $id_empleados = $_POST['id_empleados'];
+            $stmt = $conn->prepare("INSERT INTO Cine (nombre_cine, Direccion, telefono, ID_Empleados) VALUES (:nombre_cine, :direccion, :telefono, :id_empleados)");
+            $stmt->bindValue(':nombre_cine', $nombre_cine);
+            $stmt->bindValue(':direccion', $direccion);
+            $stmt->bindValue(':telefono', $telefono);
+            $stmt->bindValue(':id_empleados', $id_empleados, PDO::PARAM_INT);
+            $stmt->execute();
+            echo "Cine añadido exitosamente.";
+        } elseif ($action == "edit") {
+            // Actualizar cine
+            $id_cine = filter_input(INPUT_POST, 'id_cine', FILTER_VALIDATE_INT);
+            $nombre_cine = filter_input(INPUT_POST, 'nombre_cine', FILTER_SANITIZE_STRING);
+            $direccion = filter_input(INPUT_POST, 'direccion', FILTER_SANITIZE_STRING);
+            $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
+            $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("UPDATE Cine SET nombre_cine = ?, Direccion = ?, telefono = ?, ID_Empleados = ? WHERE ID_Cine = ?");
-        $stmt->bind_param("sssii", $nombre_cine, $direccion, $telefono, $id_empleados, $id_cine);
-        $stmt->execute();
-        echo "Cine actualizado exitosamente.";
-    } elseif ($action == "delete") {
-        $id_cine = $_POST['id_cine'];
+            $stmt = $conn->prepare("UPDATE Cine SET nombre_cine = :nombre_cine, Direccion = :direccion, telefono = :telefono, ID_Empleados = :id_empleados WHERE ID_Cine = :id_cine");
+            $stmt->bindValue(':nombre_cine', $nombre_cine);
+            $stmt->bindValue(':direccion', $direccion);
+            $stmt->bindValue(':telefono', $telefono);
+            $stmt->bindValue(':id_empleados', $id_empleados, PDO::PARAM_INT);
+            $stmt->bindValue(':id_cine', $id_cine, PDO::PARAM_INT);
+            $stmt->execute();
+            echo "Cine actualizado exitosamente.";
+        } elseif ($action == "delete") {
+            // Eliminar cine
+            $id_cine = filter_input(INPUT_POST, 'id_cine', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Cine WHERE ID_Cine = ?");
-        $stmt->bind_param("i", $id_cine);
-        $stmt->execute();
-        echo "Cine eliminado exitosamente.";
+            $stmt = $conn->prepare("DELETE FROM Cine WHERE ID_Cine = :id_cine");
+            $stmt->bindValue(':id_cine', $id_cine, PDO::PARAM_INT);
+            $stmt->execute();
+            echo "Cine eliminado exitosamente.";
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
+// Consultar cines para mostrar en la tabla
 $result = $conn->query("SELECT * FROM Cine");
 ?>
 
@@ -48,6 +63,7 @@ $result = $conn->query("SELECT * FROM Cine");
 <body>
     <h1>CRUD de Cine</h1>
 
+    <!-- Formulario para agregar cines -->
     <form method="POST">
         <input type="hidden" name="action" value="add">
         <input type="text" name="nombre_cine" placeholder="Nombre del Cine" required>
@@ -69,18 +85,26 @@ $result = $conn->query("SELECT * FROM Cine");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_Cine'] ?></td>
-                <td><?= $row['nombre_cine'] ?></td>
-                <td><?= $row['Direccion'] ?></td>
-                <td><?= $row['telefono'] ?></td>
-                <td><?= $row['ID_Empleados'] ?></td>
+                <td><?= htmlspecialchars($row['ID_Cine']) ?></td>
+                <td><?= htmlspecialchars($row['nombre_cine']) ?></td>
+                <td><?= htmlspecialchars($row['Direccion']) ?></td>
+                <td><?= htmlspecialchars($row['telefono']) ?></td>
+                <td><?= htmlspecialchars($row['ID_Empleados']) ?></td>
                 <td>
+                    <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_cine" value="<?= $row['ID_Cine'] ?>">
+                        <input type="hidden" name="id_cine" value="<?= htmlspecialchars($row['ID_Cine']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
-                    <button onclick="editCine(<?= $row['ID_Cine'] ?>, '<?= $row['nombre_cine'] ?>', '<?= $row['Direccion'] ?>', '<?= $row['telefono'] ?>', <?= $row['ID_Empleados'] ?>)">Editar</button>
+                    <!-- Botón para editar -->
+                    <button onclick="editCine(
+                        <?= htmlspecialchars($row['ID_Cine']) ?>,
+                        '<?= htmlspecialchars($row['nombre_cine']) ?>',
+                        '<?= htmlspecialchars($row['Direccion']) ?>',
+                        '<?= htmlspecialchars($row['telefono']) ?>',
+                        <?= htmlspecialchars($row['ID_Empleados']) ?>
+                    )">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>

@@ -1,41 +1,77 @@
 <?php
 require_once '../db_connection.php';
-require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $fecha_emision = $_POST['fecha_emision'];
-        $total = $_POST['total'];
-        $metodo_pago = $_POST['metodo_pago'];
-        $id_facdet = $_POST['id_facdet'];
+    try {
+        if ($action == "add") {
+            // Agregar Factura Cabecera
+            $fecha_emision = filter_input(INPUT_POST, 'fecha_emision', FILTER_SANITIZE_STRING);
+            $total = filter_input(INPUT_POST, 'total', FILTER_SANITIZE_STRING);
+            $metodo_pago = filter_input(INPUT_POST, 'metodo_pago', FILTER_SANITIZE_STRING);
+            $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("INSERT INTO Factura_Cabecera (FechaDeEmision, Total, MetodoDePago, ID_FacDet) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("sssi", $fecha_emision, $total, $metodo_pago, $id_facdet);
-        $stmt->execute();
-        echo "Factura Cabecera añadida exitosamente.";
-    } elseif ($action == "edit") {
-        $id_faccab = $_POST['id_faccab'];
-        $fecha_emision = $_POST['fecha_emision'];
-        $total = $_POST['total'];
-        $metodo_pago = $_POST['metodo_pago'];
-        $id_facdet = $_POST['id_facdet'];
+            if ($fecha_emision && $total && $metodo_pago && $id_facdet) {
+                $stmt = $conn->prepare("INSERT INTO Factura_Cabecera (FechaDeEmision, Total, MetodoDePago, ID_FacDet) 
+                                        VALUES (:fecha_emision, :total, :metodo_pago, :id_facdet)");
+                $stmt->execute([
+                    ':fecha_emision' => $fecha_emision,
+                    ':total' => $total,
+                    ':metodo_pago' => $metodo_pago,
+                    ':id_facdet' => $id_facdet
+                ]);
+                echo "Factura Cabecera añadida exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "edit") {
+            // Editar Factura Cabecera
+            $id_faccab = filter_input(INPUT_POST, 'id_faccab', FILTER_VALIDATE_INT);
+            $fecha_emision = filter_input(INPUT_POST, 'fecha_emision', FILTER_SANITIZE_STRING);
+            $total = filter_input(INPUT_POST, 'total', FILTER_SANITIZE_STRING);
+            $metodo_pago = filter_input(INPUT_POST, 'metodo_pago', FILTER_SANITIZE_STRING);
+            $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("UPDATE Factura_Cabecera SET FechaDeEmision = ?, Total = ?, MetodoDePago = ?, ID_FacDet = ? WHERE ID_FacCab = ?");
-        $stmt->bind_param("sssii", $fecha_emision, $total, $metodo_pago, $id_facdet, $id_faccab);
-        $stmt->execute();
-        echo "Factura Cabecera actualizada exitosamente.";
-    } elseif ($action == "delete") {
-        $id_faccab = $_POST['id_faccab'];
+            if ($id_faccab && $fecha_emision && $total && $metodo_pago && $id_facdet) {
+                $stmt = $conn->prepare("UPDATE Factura_Cabecera 
+                                        SET FechaDeEmision = :fecha_emision, Total = :total, MetodoDePago = :metodo_pago, ID_FacDet = :id_facdet 
+                                        WHERE ID_FacCab = :id_faccab");
+                $stmt->execute([
+                    ':fecha_emision' => $fecha_emision,
+                    ':total' => $total,
+                    ':metodo_pago' => $metodo_pago,
+                    ':id_facdet' => $id_facdet,
+                    ':id_faccab' => $id_faccab
+                ]);
+                echo "Factura Cabecera actualizada exitosamente.";
+            } else {
+                echo "Datos inválidos.";
+            }
+        } elseif ($action == "delete") {
+            // Eliminar Factura Cabecera
+            $id_faccab = filter_input(INPUT_POST, 'id_faccab', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Factura_Cabecera WHERE ID_FacCab = ?");
-        $stmt->bind_param("i", $id_faccab);
-        $stmt->execute();
-        echo "Factura Cabecera eliminada exitosamente.";
+            if ($id_faccab) {
+                $stmt = $conn->prepare("DELETE FROM Factura_Cabecera WHERE ID_FacCab = :id_faccab");
+                $stmt->execute([':id_faccab' => $id_faccab]);
+                echo "Factura Cabecera eliminada exitosamente.";
+            } else {
+                echo "ID inválido.";
+            }
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT * FROM Factura_Cabecera");
+// Consultar todas las facturas cabecera
+try {
+    $result = $conn->query("SELECT * FROM Factura_Cabecera");
+} catch (PDOException $e) {
+    echo "Error al consultar las facturas cabecera: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,6 +84,7 @@ $result = $conn->query("SELECT * FROM Factura_Cabecera");
 <body>
     <h1>CRUD de Factura Cabecera</h1>
 
+    <!-- Formulario para agregar Factura Cabecera -->
     <form method="POST">
         <input type="hidden" name="action" value="add">
         <input type="date" name="fecha_emision" placeholder="Fecha de Emisión" required>
@@ -69,18 +106,25 @@ $result = $conn->query("SELECT * FROM Factura_Cabecera");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['ID_FacCab'] ?></td>
-                <td><?= $row['FechaDeEmision'] ?></td>
-                <td><?= $row['Total'] ?></td>
-                <td><?= $row['MetodoDePago'] ?></td>
-                <td><?= $row['ID_FacDet'] ?></td>
+                <td><?= htmlspecialchars($row['ID_FacCab']) ?></td>
+                <td><?= htmlspecialchars($row['FechaDeEmision']) ?></td>
+                <td><?= htmlspecialchars($row['Total']) ?></td>
+                <td><?= htmlspecialchars($row['MetodoDePago']) ?></td>
+                <td><?= htmlspecialchars($row['ID_FacDet']) ?></td>
                 <td>
+                    <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_faccab" value="<?= $row['ID_FacCab'] ?>">
+                        <input type="hidden" name="id_faccab" value="<?= htmlspecialchars($row['ID_FacCab']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
-                    <button onclick="editFacturaCabecera(<?= $row['ID_FacCab'] ?>, '<?= $row['FechaDeEmision'] ?>', '<?= $row['Total'] ?>', '<?= $row['MetodoDePago'] ?>', <?= $row['ID_FacDet'] ?>)">Editar</button>
+                    <!-- Botón para editar -->
+                    <button onclick="editFacturaCabecera(
+                        <?= htmlspecialchars($row['ID_FacCab']) ?>, 
+                        '<?= htmlspecialchars($row['FechaDeEmision']) ?>', 
+                        '<?= htmlspecialchars($row['Total']) ?>', 
+                        '<?= htmlspecialchars($row['MetodoDePago']) ?>', 
+                        <?= htmlspecialchars($row['ID_FacDet']) ?>)">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>

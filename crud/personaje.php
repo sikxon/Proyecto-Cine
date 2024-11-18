@@ -1,44 +1,71 @@
 <?php
 require_once '../db_connection.php';
 require_once '../config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $rol = $_POST['rol'];
-        $nombre = $_POST['nombre'];
-        $dni_actor = $_POST['dni_actor'];
-        $id_pelicula = $_POST['id_pelicula'];
+    try {
+        if ($action == "add") {
+            // Agregar Personaje
+            $rol = filter_input(INPUT_POST, 'rol', FILTER_SANITIZE_STRING);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
+            $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("INSERT INTO Personaje (rol, nombre, DNI_Actor, ID_Pelicula) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssii", $rol, $nombre, $dni_actor, $id_pelicula);
-        $stmt->execute();
-        echo "Personaje añadido exitosamente.";
-    } elseif ($action == "edit") {
-        $id_personaje = $_POST['id_personaje'];
-        $rol = $_POST['rol'];
-        $nombre = $_POST['nombre'];
-        $dni_actor = $_POST['dni_actor'];
-        $id_pelicula = $_POST['id_pelicula'];
+            $stmt = $conn->prepare("INSERT INTO Personaje (rol, nombre, DNI_Actor, ID_Pelicula) 
+                                    VALUES (:rol, :nombre, :dni_actor, :id_pelicula)");
+            $stmt->execute([
+                ':rol' => $rol,
+                ':nombre' => $nombre,
+                ':dni_actor' => $dni_actor,
+                ':id_pelicula' => $id_pelicula
+            ]);
+            echo "Personaje añadido exitosamente.";
+        } elseif ($action == "edit") {
+            // Editar Personaje
+            $id_personaje = filter_input(INPUT_POST, 'id_personaje', FILTER_VALIDATE_INT);
+            $rol = filter_input(INPUT_POST, 'rol', FILTER_SANITIZE_STRING);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
+            $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("UPDATE Personaje SET rol = ?, nombre = ?, DNI_Actor = ?, ID_Pelicula = ? WHERE ID_Personaje = ?");
-        $stmt->bind_param("ssiii", $rol, $nombre, $dni_actor, $id_pelicula, $id_personaje);
-        $stmt->execute();
-        echo "Personaje actualizado exitosamente.";
-    } elseif ($action == "delete") {
-        $id_personaje = $_POST['id_personaje'];
+            $stmt = $conn->prepare("UPDATE Personaje 
+                                    SET rol = :rol, nombre = :nombre, DNI_Actor = :dni_actor, ID_Pelicula = :id_pelicula 
+                                    WHERE ID_Personaje = :id_personaje");
+            $stmt->execute([
+                ':rol' => $rol,
+                ':nombre' => $nombre,
+                ':dni_actor' => $dni_actor,
+                ':id_pelicula' => $id_pelicula,
+                ':id_personaje' => $id_personaje
+            ]);
+            echo "Personaje actualizado exitosamente.";
+        } elseif ($action == "delete") {
+            // Eliminar Personaje
+            $id_personaje = filter_input(INPUT_POST, 'id_personaje', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Personaje WHERE ID_Personaje = ?");
-        $stmt->bind_param("i", $id_personaje);
-        $stmt->execute();
-        echo "Personaje eliminado exitosamente.";
+            $stmt = $conn->prepare("DELETE FROM Personaje WHERE ID_Personaje = :id_personaje");
+            $stmt->execute([':id_personaje' => $id_personaje]);
+            echo "Personaje eliminado exitosamente.";
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
-$result = $conn->query("SELECT Personaje.ID_Personaje, Personaje.rol, Personaje.nombre, Actor.nombre AS Nombre_Actor, Pelicula.titulo AS Titulo_Pelicula 
-FROM Personaje 
-JOIN Actor ON Personaje.DNI_Actor = Actor.DNI_Actor 
-JOIN Pelicula ON Personaje.ID_Pelicula = Pelicula.ID_Pelicula");
+// Consultar todos los personajes
+try {
+    $stmt = $conn->query("SELECT Personaje.ID_Personaje, Personaje.rol, Personaje.nombre, 
+                          Actor.nombre AS Nombre_Actor, Pelicula.titulo AS Titulo_Pelicula 
+                          FROM Personaje 
+                          JOIN Actor ON Personaje.DNI_Actor = Actor.DNI_Actor 
+                          JOIN Pelicula ON Personaje.ID_Pelicula = Pelicula.ID_Pelicula");
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error al consultar los personajes: " . $e->getMessage();
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -59,8 +86,9 @@ JOIN Pelicula ON Personaje.ID_Pelicula = Pelicula.ID_Pelicula");
         <select name="dni_actor" required>
             <option value="" disabled selected>Selecciona un Actor</option>
             <?php
+            // Obtener actores disponibles
             $actores = $conn->query("SELECT DNI_Actor, nombre FROM Actor");
-            while ($actor = $actores->fetch_assoc()) {
+            while ($actor = $actores->fetch(PDO::FETCH_ASSOC)) {
                 echo "<option value='{$actor['DNI_Actor']}'>{$actor['nombre']}</option>";
             }
             ?>
@@ -68,8 +96,9 @@ JOIN Pelicula ON Personaje.ID_Pelicula = Pelicula.ID_Pelicula");
         <select name="id_pelicula" required>
             <option value="" disabled selected>Selecciona una Película</option>
             <?php
+            // Obtener películas disponibles
             $peliculas = $conn->query("SELECT ID_Pelicula, titulo FROM Pelicula");
-            while ($pelicula = $peliculas->fetch_assoc()) {
+            while ($pelicula = $peliculas->fetch(PDO::FETCH_ASSOC)) {
                 echo "<option value='{$pelicula['ID_Pelicula']}'>{$pelicula['titulo']}</option>";
             }
             ?>
@@ -87,25 +116,27 @@ JOIN Pelicula ON Personaje.ID_Pelicula = Pelicula.ID_Pelicula");
             <th>Película</th>
             <th>Acciones</th>
         </tr>
-        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
+        <?php foreach ($result as $row): ?>
             <tr>
-                <td><?= $row['ID_Personaje'] ?></td>
-                <td><?= $row['rol'] ?></td>
-                <td><?= $row['nombre'] ?></td>
-                <td><?= $row['Nombre_Actor'] ?></td>
-                <td><?= $row['Titulo_Pelicula'] ?></td>
+                <td><?= htmlspecialchars($row['ID_Personaje']) ?></td>
+                <td><?= htmlspecialchars($row['rol']) ?></td>
+                <td><?= htmlspecialchars($row['nombre']) ?></td>
+                <td><?= htmlspecialchars($row['Nombre_Actor']) ?></td>
+                <td><?= htmlspecialchars($row['Titulo_Pelicula']) ?></td>
                 <td>
                     <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id_personaje" value="<?= $row['ID_Personaje'] ?>">
+                        <input type="hidden" name="id_personaje" value="<?= htmlspecialchars($row['ID_Personaje']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
                     <!-- Botón para editar -->
-                    <button onclick="editPersonaje(<?= $row['ID_Personaje'] ?>, '<?= $row['rol'] ?>', '<?= $row['nombre'] ?>', <?= $row['Nombre_Actor'] ?>, <?= $row['Titulo_Pelicula'] ?>)">Editar</button>
+                    <button onclick="editPersonaje(<?= htmlspecialchars($row['ID_Personaje']) ?>, '<?= htmlspecialchars($row['rol']) ?>', 
+                        '<?= htmlspecialchars($row['nombre']) ?>', '<?= htmlspecialchars($row['Nombre_Actor']) ?>', 
+                        '<?= htmlspecialchars($row['Titulo_Pelicula']) ?>')">Editar</button>
                 </td>
             </tr>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
     </table>
 
     <script>
