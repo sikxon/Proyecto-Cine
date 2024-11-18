@@ -1,43 +1,59 @@
 <?php
-require_once '../db_connection.php';
-require_once '../config.php';
+require_once '../db_connection.php'; // Asegúrate de que este archivo esté configurado correctamente.
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
-    if ($action == "add") {
-        $sexo = $_POST['sexo'];
-        $apellido = $_POST['apellido'];
-        $nombre = $_POST['nombre'];
-        $edad = $_POST['edad'];
-        $pais_de_origen = $_POST['pais_de_origen'];
+    try {
+        if ($action == "add") {
+            // Insertar actor
+            $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
+            $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
+            $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("INSERT INTO Actor (sexo, apellido, nombre, edad, Pais_De_Origen) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssds", $sexo, $apellido, $nombre, $edad, $pais_de_origen);
-        $stmt->execute();
-        echo "Actor añadido exitosamente.";
-    } elseif ($action == "edit") {
-        $dni_actor = $_POST['dni_actor'];
-        $sexo = $_POST['sexo'];
-        $apellido = $_POST['apellido'];
-        $nombre = $_POST['nombre'];
-        $edad = $_POST['edad'];
-        $pais_de_origen = $_POST['pais_de_origen'];
+            $stmt = $conn->prepare("INSERT INTO Actor (sexo, apellido, nombre, edad, Pais_De_Origen) VALUES (:sexo, :apellido, :nombre, :edad, :pais_de_origen)");
+            $stmt->bindValue(':sexo', $sexo);
+            $stmt->bindValue(':apellido', $apellido);
+            $stmt->bindValue(':nombre', $nombre);
+            $stmt->bindValue(':edad', $edad, PDO::PARAM_INT);
+            $stmt->bindValue(':pais_de_origen', $pais_de_origen);
+            $stmt->execute();
+            echo "Actor añadido exitosamente.";
+        } elseif ($action == "edit") {
+            // Actualizar actor
+            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
+            $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
+            $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
+            $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
+            $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
+            $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-        $stmt = $conn->prepare("UPDATE Actor SET sexo = ?, apellido = ?, nombre = ?, edad = ?, Pais_De_Origen = ? WHERE DNI_Actor = ?");
-        $stmt->bind_param("sssdsi", $sexo, $apellido, $nombre, $edad, $pais_de_origen, $dni_actor);
-        $stmt->execute();
-        echo "Actor actualizado exitosamente.";
-    } elseif ($action == "delete") {
-        $dni_actor = $_POST['dni_actor'];
+            $stmt = $conn->prepare("UPDATE Actor SET sexo = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, Pais_De_Origen = :pais WHERE DNI_Actor = :dni");
+            $stmt->bindValue(':sexo', $sexo);
+            $stmt->bindValue(':apellido', $apellido);
+            $stmt->bindValue(':nombre', $nombre);
+            $stmt->bindValue(':edad', $edad, PDO::PARAM_INT);
+            $stmt->bindValue(':pais', $pais_de_origen);
+            $stmt->bindValue(':dni', $dni_actor, PDO::PARAM_INT);
+            $stmt->execute();
+            echo "Actor actualizado exitosamente.";
+        } elseif ($action == "delete") {
+            // Eliminar actor
+            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
 
-        $stmt = $conn->prepare("DELETE FROM Actor WHERE DNI_Actor = ?");
-        $stmt->bind_param("i", $dni_actor);
-        $stmt->execute();
-        echo "Actor eliminado exitosamente.";
+            $stmt = $conn->prepare("DELETE FROM Actor WHERE DNI_Actor = :dni");
+            $stmt->bindValue(':dni', $dni_actor, PDO::PARAM_INT);
+            $stmt->execute();
+            echo "Actor eliminado exitosamente.";
+        }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 
+// Consultar actores para mostrar en la tabla
 $result = $conn->query("SELECT * FROM Actor");
 ?>
 
@@ -75,21 +91,28 @@ $result = $conn->query("SELECT * FROM Actor");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= $row['DNI_Actor'] ?></td>
-                <td><?= $row['sexo'] ?></td>
-                <td><?= $row['apellido'] ?></td>
-                <td><?= $row['nombre'] ?></td>
-                <td><?= $row['edad'] ?></td>
-                <td><?= $row['Pais_De_Origen'] ?></td>
+                <td><?= htmlspecialchars($row['DNI_Actor']) ?></td>
+                <td><?= htmlspecialchars($row['sexo']) ?></td>
+                <td><?= htmlspecialchars($row['apellido']) ?></td>
+                <td><?= htmlspecialchars($row['nombre']) ?></td>
+                <td><?= htmlspecialchars($row['edad']) ?></td>
+                <td><?= htmlspecialchars($row['Pais_De_Origen']) ?></td>
                 <td>
                     <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="dni_actor" value="<?= $row['DNI_Actor'] ?>">
+                        <input type="hidden" name="dni_actor" value="<?= htmlspecialchars($row['DNI_Actor']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
                     <!-- Botón para editar -->
-                    <button onclick="editActor(<?= $row['DNI_Actor'] ?>, '<?= $row['sexo'] ?>', '<?= $row['apellido'] ?>', '<?= $row['nombre'] ?>', <?= $row['edad'] ?>, '<?= $row['Pais_De_Origen'] ?>')">Editar</button>
+                    <button onclick="editActor(
+                        <?= htmlspecialchars($row['DNI_Actor']) ?>,
+                        '<?= htmlspecialchars($row['sexo']) ?>',
+                        '<?= htmlspecialchars($row['apellido']) ?>',
+                        '<?= htmlspecialchars($row['nombre']) ?>',
+                        <?= htmlspecialchars($row['edad']) ?>,
+                        '<?= htmlspecialchars($row['Pais_De_Origen']) ?>'
+                    )">Editar</button>
                 </td>
             </tr>
         <?php endwhile; ?>
