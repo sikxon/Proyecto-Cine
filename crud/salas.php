@@ -1,6 +1,6 @@
 <?php
-require_once 'db_connection.php';
-
+require_once '../db_connection.php';
+require_once '../config.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
@@ -63,7 +63,7 @@ $result = $conn->query("SELECT * FROM Salas");
             <th>ID Cine</th>
             <th>Acciones</th>
         </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
                 <td><?= $row['ID_Sala'] ?></td>
                 <td><?= $row['Tipo'] ?></td>

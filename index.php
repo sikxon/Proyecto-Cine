@@ -40,7 +40,7 @@
             const entity = event.target.getAttribute('data-entity');
             if (entity) {
                 // Cargar contenido dinámico para la entidad seleccionada
-                fetch(`entidades/${entity}.php`)
+                fetch(`..crud/${entity}.php`)
                     .then(response => response.text())
                     .then(html => {
                         mainContent.innerHTML = html;
