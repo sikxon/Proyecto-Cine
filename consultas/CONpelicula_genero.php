@@ -24,7 +24,7 @@ $result = $conn->query($query);
             <th>Año de Estreno</th>
             <th>Director</th>
         </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
                 <td><?= $row['titulo'] ?></td>
                 <td><?= $row['Genero'] ?></td>

@@ -33,7 +33,7 @@ $result = $conn->query($query);
             <th>Inicio</th>
             <th>Fin</th>
         </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
                 <td><?= $row['titulo'] ?></td>
                 <td><?= $row['Clasificacion'] ?></td>
