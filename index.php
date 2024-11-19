@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Cine</title>
-    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="./css/index.css">
     <script src="scripts/navigation.js" defer></script>
 </head>
 <body>

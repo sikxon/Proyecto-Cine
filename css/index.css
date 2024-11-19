@@ -1,0 +1,70 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial; 
+}
+
+body {
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #282c34;
+    color: #fff;
+    padding: 10px;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+header h1 {
+    font-size: 80px; 
+    margin: 10px 0; 
+    text-align: center; 
+}
+
+nav {
+    display: flex; 
+    justify-content: center; 
+    margin-top: 10px; 
+}
+
+nav ul {
+    list-style-type: none; 
+    display: flex; 
+    gap: 15px; 
+    padding: 10px; 
+    margin: 0; 
+}
+
+nav ul li a {
+    text-decoration: none; 
+    color: black; 
+    background-color: #d8d8d8; 
+    padding: 10px 20px; 
+    border-radius: 5px; 
+    font-weight: bold;
+}
+
+#main-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column; /* Apila los elementos en columna */
+    justify-content: flex-start; /* Alinea el contenido hacia la parte superior */
+    align-items: center; /* Centra los elementos horizontalmente */
+    height: 100%; /* Asegura que el main tenga suficiente altura */
+}
+
+#main-content h2 {
+    margin-top: 0; /* Elimina cualquier margen superior en el h2 */
+}
+
+#main-content p {
+    margin-top: 0%;
+}
