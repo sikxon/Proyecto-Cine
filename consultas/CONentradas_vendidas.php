@@ -6,7 +6,7 @@ $query = "SELECT Cliente.Nombre, Cliente.Apellido, Entrada.FechaDeCompra, Factur
             JOIN Entrada ON Cliente.ID_Cliente = Entrada.ID_Cliente
             JOIN Factura_Detalles ON Entrada.ID_FacDet = Factura_Detalles.ID_FacDet";
 
-$result = $conn->query($query);
+$result = $pdo->query($query);
 ?>
 
 <!DOCTYPE html>

@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $fechaDeNacimiento = filter_input(INPUT_POST, 'fechaDeNacimiento', FILTER_SANITIZE_STRING);
 
             if ($nombre && $apellido && $email && $telefono && $direccion && $fechaDeNacimiento) {
-                $stmt = $conn->prepare("INSERT INTO Cliente (Nombre, Apellido, Email, Telefono, Direccion, FechaDeNacimiento) 
+                $stmt = $pdo->prepare("INSERT INTO Cliente (Nombre, Apellido, Email, Telefono, Direccion, FechaDeNacimiento) 
                                         VALUES (:nombre, :apellido, :email, :telefono, :direccion, :fechaDeNacimiento)");
                 $stmt->execute([
                     ':nombre' => $nombre,
@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $fechaDeNacimiento = filter_input(INPUT_POST, 'fechaDeNacimiento', FILTER_SANITIZE_STRING);
 
             if ($id && $nombre && $apellido && $email && $telefono && $direccion && $fechaDeNacimiento) {
-                $stmt = $conn->prepare("UPDATE Cliente 
+                $stmt = $pdo->prepare("UPDATE Cliente 
                                         SET Nombre = :nombre, Apellido = :apellido, Email = :email, Telefono = :telefono, Direccion = :direccion, FechaDeNacimiento = :fechaDeNacimiento 
                                         WHERE ID_Cliente = :id");
                 $stmt->execute([
@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
 
             if ($id) {
-                $stmt = $conn->prepare("DELETE FROM Cliente WHERE ID_Cliente = :id");
+                $stmt = $pdo->prepare("DELETE FROM Cliente WHERE ID_Cliente = :id");
                 $stmt->execute([':id' => $id]);
                 echo "Cliente eliminado exitosamente.";
             } else {
@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 // Consultar todos los clientes
 try {
-    $result = $conn->query("SELECT * FROM Cliente");
+    $result = $pdo->query("SELECT * FROM Cliente");
 } catch (PDOException $e) {
     echo "Error al consultar los clientes: " . $e->getMessage();
     exit;

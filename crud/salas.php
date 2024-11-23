@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $capacidad = filter_input(INPUT_POST, 'capacidad', FILTER_VALIDATE_INT);
             $id_cine = filter_input(INPUT_POST, 'id_cine', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("INSERT INTO Salas (Tipo, Capacidad, ID_Cine) 
+            $stmt = $pdo->prepare("INSERT INTO Salas (Tipo, Capacidad, ID_Cine) 
                                     VALUES (:tipo, :capacidad, :id_cine)");
             $stmt->execute([
                 ':tipo' => $tipo,
@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $capacidad = filter_input(INPUT_POST, 'capacidad', FILTER_VALIDATE_INT);
             $id_cine = filter_input(INPUT_POST, 'id_cine', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("UPDATE Salas 
+            $stmt = $pdo->prepare("UPDATE Salas 
                                     SET Tipo = :tipo, Capacidad = :capacidad, ID_Cine = :id_cine 
                                     WHERE ID_Sala = :id_sala");
             $stmt->execute([
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Eliminar Sala
             $id_sala = filter_input(INPUT_POST, 'id_sala', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("DELETE FROM Salas WHERE ID_Sala = :id_sala");
+            $stmt = $pdo->prepare("DELETE FROM Salas WHERE ID_Sala = :id_sala");
             $stmt->execute([':id_sala' => $id_sala]);
             echo "Sala eliminada exitosamente.";
         }
@@ -52,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todas las salas
 try {
-    $stmt = $conn->query("SELECT * FROM Salas");
+    $stmt = $pdo->query("SELECT * FROM Salas");
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error al consultar las salas: " . $e->getMessage();

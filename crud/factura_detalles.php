@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $subtotal = filter_input(INPUT_POST, 'subtotal', FILTER_VALIDATE_FLOAT);
 
             if ($cantidad_entradas && $precio_por_entrada && $subtotal) {
-                $stmt = $conn->prepare("INSERT INTO Factura_Detalles (CantidadDeEntradas, PrecioPorEntrada, Subtotal) 
+                $stmt = $pdo->prepare("INSERT INTO Factura_Detalles (CantidadDeEntradas, PrecioPorEntrada, Subtotal) 
                                         VALUES (:cantidad_entradas, :precio_por_entrada, :subtotal)");
                 $stmt->execute([
                     ':cantidad_entradas' => $cantidad_entradas,
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $subtotal = filter_input(INPUT_POST, 'subtotal', FILTER_VALIDATE_FLOAT);
 
             if ($id_facdet && $cantidad_entradas && $precio_por_entrada && $subtotal) {
-                $stmt = $conn->prepare("UPDATE Factura_Detalles 
+                $stmt = $pdo->prepare("UPDATE Factura_Detalles 
                                         SET CantidadDeEntradas = :cantidad_entradas, PrecioPorEntrada = :precio_por_entrada, Subtotal = :subtotal 
                                         WHERE ID_FacDet = :id_facdet");
                 $stmt->execute([
@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
 
             if ($id_facdet) {
-                $stmt = $conn->prepare("DELETE FROM Factura_Detalles WHERE ID_FacDet = :id_facdet");
+                $stmt = $pdo->prepare("DELETE FROM Factura_Detalles WHERE ID_FacDet = :id_facdet");
                 $stmt->execute([':id_facdet' => $id_facdet]);
                 echo "Factura Detalles eliminada exitosamente.";
             } else {
@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todas las facturas detalles
 try {
-    $result = $conn->query("SELECT * FROM Factura_Detalles");
+    $result = $pdo->query("SELECT * FROM Factura_Detalles");
 } catch (PDOException $e) {
     echo "Error al consultar las facturas detalles: " . $e->getMessage();
     exit;

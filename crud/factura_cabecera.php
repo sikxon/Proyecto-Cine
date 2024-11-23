@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
 
             if ($fecha_emision && $total && $metodo_pago && $id_facdet) {
-                $stmt = $conn->prepare("INSERT INTO Factura_Cabecera (FechaDeEmision, Total, MetodoDePago, ID_FacDet) 
+                $stmt = $pdo->prepare("INSERT INTO Factura_Cabecera (FechaDeEmision, Total, MetodoDePago, ID_FacDet) 
                                         VALUES (:fecha_emision, :total, :metodo_pago, :id_facdet)");
                 $stmt->execute([
                     ':fecha_emision' => $fecha_emision,
@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_facdet = filter_input(INPUT_POST, 'id_facdet', FILTER_VALIDATE_INT);
 
             if ($id_faccab && $fecha_emision && $total && $metodo_pago && $id_facdet) {
-                $stmt = $conn->prepare("UPDATE Factura_Cabecera 
+                $stmt = $pdo->prepare("UPDATE Factura_Cabecera 
                                         SET FechaDeEmision = :fecha_emision, Total = :total, MetodoDePago = :metodo_pago, ID_FacDet = :id_facdet 
                                         WHERE ID_FacCab = :id_faccab");
                 $stmt->execute([
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_faccab = filter_input(INPUT_POST, 'id_faccab', FILTER_VALIDATE_INT);
 
             if ($id_faccab) {
-                $stmt = $conn->prepare("DELETE FROM Factura_Cabecera WHERE ID_FacCab = :id_faccab");
+                $stmt = $pdo->prepare("DELETE FROM Factura_Cabecera WHERE ID_FacCab = :id_faccab");
                 $stmt->execute([':id_faccab' => $id_faccab]);
                 echo "Factura Cabecera eliminada exitosamente.";
             } else {
@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todas las facturas cabecera
 try {
-    $result = $conn->query("SELECT * FROM Factura_Cabecera");
+    $result = $pdo->query("SELECT * FROM Factura_Cabecera");
 } catch (PDOException $e) {
     echo "Error al consultar las facturas cabecera: " . $e->getMessage();
     exit;

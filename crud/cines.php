@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
             $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("INSERT INTO Cine (nombre_cine, Direccion, telefono, ID_Empleados) VALUES (:nombre_cine, :direccion, :telefono, :id_empleados)");
+            $stmt = $pdo->prepare("INSERT INTO Cine (nombre_cine, Direccion, telefono, ID_Empleados) VALUES (:nombre_cine, :direccion, :telefono, :id_empleados)");
             $stmt->bindValue(':nombre_cine', $nombre_cine);
             $stmt->bindValue(':direccion', $direccion);
             $stmt->bindValue(':telefono', $telefono);
@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
             $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("UPDATE Cine SET nombre_cine = :nombre_cine, Direccion = :direccion, telefono = :telefono, ID_Empleados = :id_empleados WHERE ID_Cine = :id_cine");
+            $stmt = $pdo->prepare("UPDATE Cine SET nombre_cine = :nombre_cine, Direccion = :direccion, telefono = :telefono, ID_Empleados = :id_empleados WHERE ID_Cine = :id_cine");
             $stmt->bindValue(':nombre_cine', $nombre_cine);
             $stmt->bindValue(':direccion', $direccion);
             $stmt->bindValue(':telefono', $telefono);
@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Eliminar cine
             $id_cine = filter_input(INPUT_POST, 'id_cine', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("DELETE FROM Cine WHERE ID_Cine = :id_cine");
+            $stmt = $pdo->prepare("DELETE FROM Cine WHERE ID_Cine = :id_cine");
             $stmt->bindValue(':id_cine', $id_cine, PDO::PARAM_INT);
             $stmt->execute();
             echo "Cine eliminado exitosamente.";
@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Consultar cines para mostrar en la tabla
-$result = $conn->query("SELECT * FROM Cine");
+$result = $pdo->query("SELECT * FROM Cine");
 ?>
 
 <!DOCTYPE html>

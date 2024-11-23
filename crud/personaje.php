@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
             $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("INSERT INTO Personaje (rol, nombre, DNI_Actor, ID_Pelicula) 
+            $stmt = $pdo->prepare("INSERT INTO Personaje (rol, nombre, DNI_Actor, ID_Pelicula) 
                                     VALUES (:rol, :nombre, :dni_actor, :id_pelicula)");
             $stmt->execute([
                 ':rol' => $rol,
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
             $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("UPDATE Personaje 
+            $stmt = $pdo->prepare("UPDATE Personaje 
                                     SET rol = :rol, nombre = :nombre, DNI_Actor = :dni_actor, ID_Pelicula = :id_pelicula 
                                     WHERE ID_Personaje = :id_personaje");
             $stmt->execute([
@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Eliminar Personaje
             $id_personaje = filter_input(INPUT_POST, 'id_personaje', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("DELETE FROM Personaje WHERE ID_Personaje = :id_personaje");
+            $stmt = $pdo->prepare("DELETE FROM Personaje WHERE ID_Personaje = :id_personaje");
             $stmt->execute([':id_personaje' => $id_personaje]);
             echo "Personaje eliminado exitosamente.";
         }
@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todos los personajes
 try {
-    $stmt = $conn->query("SELECT Personaje.ID_Personaje, Personaje.rol, Personaje.nombre, 
+    $stmt = $pdo->query("SELECT Personaje.ID_Personaje, Personaje.rol, Personaje.nombre, 
                           Actor.nombre AS Nombre_Actor, Pelicula.titulo AS Titulo_Pelicula 
                           FROM Personaje 
                           JOIN Actor ON Personaje.DNI_Actor = Actor.DNI_Actor 

@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $estado = filter_input(INPUT_POST, 'estado', FILTER_SANITIZE_STRING);
             $id_sala = filter_input(INPUT_POST, 'id_sala', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("INSERT INTO Butacas (NumeroDeFila, NumeroDeAsiento, Estado, ID_Sala) VALUES (:numero_fila, :numero_asiento, :estado, :id_sala)");
+            $stmt = $pdo->prepare("INSERT INTO Butacas (NumeroDeFila, NumeroDeAsiento, Estado, ID_Sala) VALUES (:numero_fila, :numero_asiento, :estado, :id_sala)");
             $stmt->bindValue(':numero_fila', $numero_fila, PDO::PARAM_INT);
             $stmt->bindValue(':numero_asiento', $numero_asiento, PDO::PARAM_INT);
             $stmt->bindValue(':estado', $estado);
@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $estado = filter_input(INPUT_POST, 'estado', FILTER_SANITIZE_STRING);
             $id_sala = filter_input(INPUT_POST, 'id_sala', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("UPDATE Butacas SET NumeroDeFila = :numero_fila, NumeroDeAsiento = :numero_asiento, Estado = :estado, ID_Sala = :id_sala WHERE ID_Butaca = :id_butaca");
+            $stmt = $pdo->prepare("UPDATE Butacas SET NumeroDeFila = :numero_fila, NumeroDeAsiento = :numero_asiento, Estado = :estado, ID_Sala = :id_sala WHERE ID_Butaca = :id_butaca");
             $stmt->bindValue(':numero_fila', $numero_fila, PDO::PARAM_INT);
             $stmt->bindValue(':numero_asiento', $numero_asiento, PDO::PARAM_INT);
             $stmt->bindValue(':estado', $estado);
@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Eliminar una butaca
             $id_butaca = filter_input(INPUT_POST, 'id_butaca', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("DELETE FROM Butacas WHERE ID_Butaca = :id_butaca");
+            $stmt = $pdo->prepare("DELETE FROM Butacas WHERE ID_Butaca = :id_butaca");
             $stmt->bindValue(':id_butaca', $id_butaca, PDO::PARAM_INT);
             $stmt->execute();
             echo "Butaca eliminada exitosamente.";
@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Consultar todas las butacas para mostrarlas en la tabla
-$result = $conn->query("SELECT * FROM Butacas");
+$result = $pdo->query("SELECT * FROM Butacas");
 ?>
 
 <!DOCTYPE html>

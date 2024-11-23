@@ -7,7 +7,7 @@ $query = "SELECT Pelicula.titulo, Funcion.Inicio, Funcion.Fin, Cine.nombre_cine
             JOIN Salas ON Funcion.ID_Salas = Salas.ID_Sala
             JOIN Cine ON Salas.ID_Cine = Cine.ID_Cine";
 
-$result = $conn->query($query);
+$result = $pdo->query($query);
 ?>
 
 <!DOCTYPE html>

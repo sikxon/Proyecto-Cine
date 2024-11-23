@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
             if ($sexo && $apellido && $nombre && $edad && $pais_de_origen) {
-                $stmt = $conn->prepare("INSERT INTO Empleados (sexo, apellido, nombre, edad, Pais_De_Origen) 
+                $stmt = $pdo->prepare("INSERT INTO Empleados (sexo, apellido, nombre, edad, Pais_De_Origen) 
                                         VALUES (:sexo, :apellido, :nombre, :edad, :pais_de_origen)");
                 $stmt->execute([
                     ':sexo' => $sexo,
@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
             if ($id_empleados && $sexo && $apellido && $nombre && $edad && $pais_de_origen) {
-                $stmt = $conn->prepare("UPDATE Empleados 
+                $stmt = $pdo->prepare("UPDATE Empleados 
                                         SET sexo = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, Pais_De_Origen = :pais_de_origen 
                                         WHERE ID_Empleados = :id_empleados");
                 $stmt->execute([
@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
             if ($id_empleados) {
-                $stmt = $conn->prepare("DELETE FROM Empleados WHERE ID_Empleados = :id_empleados");
+                $stmt = $pdo->prepare("DELETE FROM Empleados WHERE ID_Empleados = :id_empleados");
                 $stmt->execute([':id_empleados' => $id_empleados]);
                 echo "Empleado eliminado exitosamente.";
             } else {
@@ -71,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todos los empleados
 try {
-    $result = $conn->query("SELECT * FROM Empleados");
+    $result = $pdo->query("SELECT * FROM Empleados");
 } catch (PDOException $e) {
     echo "Error al consultar los empleados: " . $e->getMessage();
     exit;

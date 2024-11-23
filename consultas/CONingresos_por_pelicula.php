@@ -7,7 +7,7 @@ $query = "SELECT Pelicula.titulo, SUM(Factura_Detalles.Subtotal) AS IngresosTota
             JOIN Factura_Detalles ON Funcion.ID_Programacion = Factura_Detalles.ID_FacDet
             GROUP BY Pelicula.titulo";
 
-$result = $conn->query($query);
+$result = $pdo->query($query);
 ?>
 
 <!DOCTYPE html>

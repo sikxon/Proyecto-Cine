@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_cliente = filter_input(INPUT_POST, 'id_cliente', FILTER_VALIDATE_INT);
 
             if ($precio && $fecha_de_compra && $id_facdet && $id_cliente) {
-                $stmt = $conn->prepare("INSERT INTO Entrada (Precio, FechaDeCompra, ID_FacDet, ID_Cliente) 
+                $stmt = $pdo->prepare("INSERT INTO Entrada (Precio, FechaDeCompra, ID_FacDet, ID_Cliente) 
                                         VALUES (:precio, :fecha_de_compra, :id_facdet, :id_cliente)");
                 $stmt->execute([
                     ':precio' => $precio,
@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_cliente = filter_input(INPUT_POST, 'id_cliente', FILTER_VALIDATE_INT);
 
             if ($id_entrada && $precio && $fecha_de_compra && $id_facdet && $id_cliente) {
-                $stmt = $conn->prepare("UPDATE Entrada 
+                $stmt = $pdo->prepare("UPDATE Entrada 
                                         SET Precio = :precio, FechaDeCompra = :fecha_de_compra, ID_FacDet = :id_facdet, ID_Cliente = :id_cliente 
                                         WHERE ID_Entrada = :id_entrada");
                 $stmt->execute([
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_entrada = filter_input(INPUT_POST, 'id_entrada', FILTER_VALIDATE_INT);
 
             if ($id_entrada) {
-                $stmt = $conn->prepare("DELETE FROM Entrada WHERE ID_Entrada = :id_entrada");
+                $stmt = $pdo->prepare("DELETE FROM Entrada WHERE ID_Entrada = :id_entrada");
                 $stmt->execute([':id_entrada' => $id_entrada]);
                 echo "Entrada eliminada exitosamente.";
             } else {
@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todas las entradas
 try {
-    $result = $conn->query("SELECT * FROM Entrada");
+    $result = $pdo->query("SELECT * FROM Entrada");
 } catch (PDOException $e) {
     echo "Error al consultar las entradas: " . $e->getMessage();
     exit;

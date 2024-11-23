@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_salas = filter_input(INPUT_POST, 'id_salas', FILTER_VALIDATE_INT);
 
             if ($inicio && $fin && $id_pelicula && $id_salas) {
-                $stmt = $conn->prepare("INSERT INTO Funcion (Inicio, Fin, ID_Pelicula, ID_Salas) 
+                $stmt = $pdo->prepare("INSERT INTO Funcion (Inicio, Fin, ID_Pelicula, ID_Salas) 
                                         VALUES (:inicio, :fin, :id_pelicula, :id_salas)");
                 $stmt->execute([
                     ':inicio' => $inicio,
@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_salas = filter_input(INPUT_POST, 'id_salas', FILTER_VALIDATE_INT);
 
             if ($id_programacion && $inicio && $fin && $id_pelicula && $id_salas) {
-                $stmt = $conn->prepare("UPDATE Funcion 
+                $stmt = $pdo->prepare("UPDATE Funcion 
                                         SET Inicio = :inicio, Fin = :fin, ID_Pelicula = :id_pelicula, ID_Salas = :id_salas 
                                         WHERE ID_Programacion = :id_programacion");
                 $stmt->execute([
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_programacion = filter_input(INPUT_POST, 'id_programacion', FILTER_VALIDATE_INT);
 
             if ($id_programacion) {
-                $stmt = $conn->prepare("DELETE FROM Funcion WHERE ID_Programacion = :id_programacion");
+                $stmt = $pdo->prepare("DELETE FROM Funcion WHERE ID_Programacion = :id_programacion");
                 $stmt->execute([':id_programacion' => $id_programacion]);
                 echo "Función eliminada exitosamente.";
             } else {
@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todas las funciones
 try {
-    $result = $conn->query("SELECT * FROM Funcion");
+    $result = $pdo->query("SELECT * FROM Funcion");
 } catch (PDOException $e) {
     echo "Error al consultar las funciones: " . $e->getMessage();
     exit;

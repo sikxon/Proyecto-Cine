@@ -6,7 +6,7 @@ $query = "SELECT Pelicula.titulo, Actor.nombre, Actor.apellido, Personaje.nombre
             JOIN Personaje ON Pelicula.ID_Pelicula = Personaje.ID_Pelicula
             JOIN Actor ON Personaje.DNI_Actor = Actor.DNI_Actor";
 
-$result = $conn->query($query);
+$result = $pdo->query($query);
 ?>
 
 <!DOCTYPE html>

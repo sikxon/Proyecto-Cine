@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $calificacion = filter_input(INPUT_POST, 'calificacion', FILTER_SANITIZE_STRING);
             $duracion = filter_input(INPUT_POST, 'duracion', FILTER_SANITIZE_STRING);
 
-            $stmt = $conn->prepare("INSERT INTO Pelicula (titulo, Año_de_estreno, Clasificacion, Director, productor, idioma, Calificacion, Duracion) 
+            $stmt = $pdo->prepare("INSERT INTO Pelicula (titulo, Año_de_estreno, Clasificacion, Director, productor, idioma, Calificacion, Duracion) 
                                     VALUES (:titulo, :anio, :clasificacion, :director, :productor, :idioma, :calificacion, :duracion)");
             $stmt->execute([
                 ':titulo' => $titulo,
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $calificacion = filter_input(INPUT_POST, 'calificacion', FILTER_SANITIZE_STRING);
             $duracion = filter_input(INPUT_POST, 'duracion', FILTER_SANITIZE_STRING);
 
-            $stmt = $conn->prepare("UPDATE Pelicula SET titulo = :titulo, Año_de_estreno = :anio, Clasificacion = :clasificacion, 
+            $stmt = $pdo->prepare("UPDATE Pelicula SET titulo = :titulo, Año_de_estreno = :anio, Clasificacion = :clasificacion, 
                                     Director = :director, productor = :productor, idioma = :idioma, Calificacion = :calificacion, 
                                     Duracion = :duracion WHERE ID_Pelicula = :id_pelicula");
             $stmt->execute([
@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Eliminar Película
             $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
-            $stmt = $conn->prepare("DELETE FROM Pelicula WHERE ID_Pelicula = :id_pelicula");
+            $stmt = $pdo->prepare("DELETE FROM Pelicula WHERE ID_Pelicula = :id_pelicula");
             $stmt->execute([':id_pelicula' => $id_pelicula]);
             echo "Película eliminada exitosamente.";
         }
@@ -71,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todas las películas
 try {
-    $result = $conn->query("SELECT * FROM Pelicula");
+    $result = $pdo->query("SELECT * FROM Pelicula");
 } catch (PDOException $e) {
     echo "Error al consultar las películas: " . $e->getMessage();
     exit;

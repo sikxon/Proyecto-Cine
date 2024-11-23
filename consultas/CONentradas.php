@@ -9,7 +9,7 @@ $query = "SELECT Pelicula.titulo, Pelicula.Clasificacion, Pelicula.idioma, Factu
           JOIN Butacas ON Salas.ID_Sala = Butacas.ID_Sala
           JOIN Factura_Detalles ON Funcion.ID_Programacion = Factura_Detalles.ID_FacDet";
 
-$result = $conn->query($query);
+$result = $pdo->query($query);
 ?>
 
 <!DOCTYPE html>

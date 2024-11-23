@@ -7,7 +7,7 @@ $query = "SELECT Butacas.NumeroDeFila, Butacas.NumeroDeAsiento, Butacas.Estado
             JOIN Butacas ON Salas.ID_Sala = Butacas.ID_Sala
             WHERE Butacas.Estado = 'Libre'";
 
-$result = $conn->query($query);
+$result = $pdo->query($query);
 ?>
 
 <!DOCTYPE html>

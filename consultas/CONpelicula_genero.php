@@ -6,7 +6,7 @@ $query = "SELECT Pelicula.titulo, Genero.Nombre AS Genero, Pelicula.Año_de_estr
           JOIN Genero_Pelicula ON Pelicula.ID_Pelicula = Genero_Pelicula.ID_Pelicula
           JOIN Genero ON Genero_Pelicula.ID_Genero = Genero.ID_Genero";
 
-$result = $conn->query($query);
+$result = $pdo->query($query);
 ?>
 
 <!DOCTYPE html>

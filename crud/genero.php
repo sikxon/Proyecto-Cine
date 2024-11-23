@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
 
             if ($nombre) {
-                $stmt = $conn->prepare("INSERT INTO Genero (Nombre) VALUES (:nombre)");
+                $stmt = $pdo->prepare("INSERT INTO Genero (Nombre) VALUES (:nombre)");
                 $stmt->execute([':nombre' => $nombre]);
                 echo "Género añadido exitosamente.";
             } else {
@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
 
             if ($id_genero && $nombre) {
-                $stmt = $conn->prepare("UPDATE Genero SET Nombre = :nombre WHERE ID_Genero = :id_genero");
+                $stmt = $pdo->prepare("UPDATE Genero SET Nombre = :nombre WHERE ID_Genero = :id_genero");
                 $stmt->execute([
                     ':nombre' => $nombre,
                     ':id_genero' => $id_genero
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_genero = filter_input(INPUT_POST, 'id_genero', FILTER_VALIDATE_INT);
 
             if ($id_genero) {
-                $stmt = $conn->prepare("DELETE FROM Genero WHERE ID_Genero = :id_genero");
+                $stmt = $pdo->prepare("DELETE FROM Genero WHERE ID_Genero = :id_genero");
                 $stmt->execute([':id_genero' => $id_genero]);
                 echo "Género eliminado exitosamente.";
             } else {
@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 // Consultar todos los géneros
 try {
-    $result = $conn->query("SELECT * FROM Genero");
+    $result = $pdo->query("SELECT * FROM Genero");
 } catch (PDOException $e) {
     echo "Error al consultar los géneros: " . $e->getMessage();
     exit;
