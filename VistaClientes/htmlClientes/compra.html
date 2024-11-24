@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprar - La Sustancia</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Encabezado -->
+    <header class="cabecera">
+        <h1 class="logo">🎬 Proyecto Cine</h1>
+        <nav>
+            <ul class="menu">
+                <li><a href="index.html" class="boton">Inicio</a></li>
+                <li><a href="cartelera.html" class="boton">Cartelera</a></li>
+                <li><a href="equipo.html" class="boton">Equipo</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Compra de película -->
+    <div class="compra-pelicula">
+        <h1 class="titulo-compra">Comprar Entradas - La Sustancia</h1>
+        <div class="compra-contenido">
+            <!-- Imagen de la película -->
+            <div class="compra-img">
+                <img src="../imagenes/peli1.jpg" alt="La Sustancia">
+            </div>
+            <!-- Formulario -->
+            <form action="confirmacion.html" method="POST" class="formulario-compra">
+                <label for="cantidad">Cantidad de Entradas:</label>
+                <select name="cantidad" id="cantidad">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+
+                <label>Reserva de Butacas:</label>
+                <div class="butacas-container">
+                    <!-- Butacas como botones -->
+                    <button type="button" class="butaca" data-id="1A">1A</button>
+                    <button type="button" class="butaca" data-id="1B">1B</button>
+                    <button type="button" class="butaca" data-id="2A">2A</button>
+                    <button type="button" class="butaca" data-id="2B">2B</button>
+                    <button type="button" class="butaca" data-id="3A">3A</button>
+                    <button type="button" class="butaca" data-id="3B">3B</button>
+                    <button type="button" class="butaca" data-id="4A">4A</button>
+                    <button type="button" class="butaca" data-id="4B">4B</button>
+                    <button type="button" class="butaca" data-id="5A">5A</button>
+                    <button type="button" class="butaca" data-id="5B">5B</button>
+                </div>
+
+                <label for="nombre">Nombre del Comprador:</label>
+                <input type="text" name="nombre" id="nombre" placeholder="Ingresa tu nombre" required>
+
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" name="email" id="email" placeholder="Ingresa tu email" required>
+
+                <button type="submit" class="boton-comprar">Confirmar Compra</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="pie">
+        <p>&copy; hola 👀👅</p>
+    </footer>
+
+    <script>
+        const butacas = document.querySelectorAll('.butaca');
+        const selectedButacas = [];
+        butacas.forEach((butaca) => {
+            butaca.addEventListener('click', () => {
+                const butacaId = butaca.getAttribute('data-id');
+                if (selectedButacas.includes(butacaId)) {
+                    selectedButacas.splice(selectedButacas.indexOf(butacaId), 1);
+                    butaca.classList.remove('seleccionada');
+                } else {
+                    selectedButacas.push(butacaId);
+                    butaca.classList.add('seleccionada');
+                }
+                console.log('Butacas seleccionadas:', selectedButacas);
+            });
+        });
+    </script>
+</body>
+
+</html>

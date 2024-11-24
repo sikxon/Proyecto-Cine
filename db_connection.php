@@ -7,7 +7,7 @@ $password = ""; // Contraseña (dejar en blanco si no configuraste una)
 try {
     // Crear la conexión PDO
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-
+    
     // Configurar el modo de errores para PDO
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprar - Venom el Último Baile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Encabezado -->
+    <header class="cabecera">
+        <h1 class="logo">🎬 Proyecto Cine</h1>
+        <nav>
+            <ul class="menu">
+                <li><a href="index.html" class="boton">Inicio</a></li>
+                <li><a href="cartelera.html" class="boton">Cartelera</a></li>
+                <li><a href="equipo.html" class="boton">Equipo</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="compra-pelicula">
+        <h1>Comprar Entradas - Venom el Último Baile</h1>
+        <div class="compra-contenido">
+            <div class="compra-img">
+                <img src="../imagenes/peli3.jpg" alt="Venom el Último Baile">
+            </div>
+            <form action="confirmacion.html" method="POST" class="formulario-compra">
+                <label for="cantidad">Cantidad de Entradas:</label>
+                <select name="cantidad" id="cantidad">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+
+                <label>Reserva de Butacas:</label>
+                <!-- Butacas representadas como botones -->
+                <div class="butacas-container">
+                    <button type="button" class="butaca" data-id="1A">1 - A</button>
+                    <button type="button" class="butaca" data-id="1B">1 - B</button>
+                    <button type="button" class="butaca" data-id="2A">2 - A</button>
+                    <button type="button" class="butaca" data-id="2B">2 - B</button>
+                    <button type="button" class="butaca" data-id="3A">3 - A</button>
+                    <button type="button" class="butaca" data-id="3B">3 - B</button>
+                    <button type="button" class="butaca" data-id="4A">4 - A</button>
+                    <button type="button" class="butaca" data-id="4B">4 - B</button>
+                    <button type="button" class="butaca" data-id="5A">5 - A</button>
+                    <button type="button" class="butaca" data-id="5B">5 - B</button>
+                </div>
+
+                <label for="nombre">Nombre del Comprador:</label>
+                <input type="text" name="nombre" id="nombre" placeholder="Ingresa tu nombre" required>
+
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" name="email" id="email" placeholder="Ingresa tu email" required>
+
+                <button type="submit" class="boton-comprar">Confirmar Compra</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="pie">
+        <p>&copy; hola 👀👅</p>
+    </footer>
+
+    <script>
+        // Obtener todos los botones de butacas
+        const butacas = document.querySelectorAll('.butaca');
+        const selectedButacas = []; // Array para almacenar las butacas seleccionadas
+
+        // Función para manejar el clic en los botones
+        butacas.forEach((butaca) => {
+            butaca.addEventListener('click', () => {
+                const butacaId = butaca.getAttribute('data-id');
+
+                // Verificar si la butaca ya está seleccionada
+                if (selectedButacas.includes(butacaId)) {
+                    // Si ya está seleccionada, desmarcarla
+                    selectedButacas.splice(selectedButacas.indexOf(butacaId), 1);
+                    butaca.classList.remove('seleccionada');
+                } else {
+                    // Si no está seleccionada, marcarla
+                    selectedButacas.push(butacaId);
+                    butaca.classList.add('seleccionada');
+                }
+
+                // Mostrar las butacas seleccionadas en la consola
+                console.log('Butacas seleccionadas:', selectedButacas);
+            });
+        });
+    </script>
+
+</body>
+
+</html>

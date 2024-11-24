@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
             $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-            $stmt = $pdo->prepare("INSERT INTO Actor (sexo, apellido, nombre, edad, Pais_De_Origen) VALUES (:sexo, :apellido, :nombre, :edad, :pais_de_origen)");
+            $stmt = $pdo->prepare("INSERT INTO actor (sexo, apellido, nombre, edad, Pais_De_Origen) VALUES (:sexo, :apellido, :nombre, :edad, :pais_de_origen)");
             $stmt->bindValue(':sexo', $sexo);
             $stmt->bindValue(':apellido', $apellido);
             $stmt->bindValue(':nombre', $nombre);
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
             $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-            $stmt = $pdo->prepare("UPDATE Actor SET sexo = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, Pais_De_Origen = :pais WHERE DNI_Actor = :dni");
+            $stmt = $pdo->prepare("UPDATE actor SET sexo = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, Pais_De_Origen = :pais WHERE DNI_Actor = :dni");
             $stmt->bindValue(':sexo', $sexo);
             $stmt->bindValue(':apellido', $apellido);
             $stmt->bindValue(':nombre', $nombre);
@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Eliminar actor
             $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
 
-            $stmt = $pdo->prepare("DELETE FROM Actor WHERE DNI_Actor = :dni");
+            $stmt = $pdo->prepare("DELETE FROM actor WHERE DNI_Actor = :dni");
             $stmt->bindValue(':dni', $dni_actor, PDO::PARAM_INT);
             $stmt->execute();
             echo "Actor eliminado exitosamente.";
@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Consultar actores para mostrar en la tabla
-$result = $pdo->query("SELECT * FROM Actor");
+$result = $pdo->query("SELECT * FROM actor");
 ?>
 
 <!DOCTYPE html>
