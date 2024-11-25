@@ -7,13 +7,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         if ($action == "add") {
             // Insertar actor
+            $dni_actor = filter_input(INPUT_POST, 'DNI_Actor', FILTER_VALIDATE_INT);
             $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
             $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
             $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
-            $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
+            $pais_de_origen = filter_input(INPUT_POST, 'Pais_De_Origen', FILTER_SANITIZE_STRING);
 
-            $stmt = $pdo->prepare("INSERT INTO actor (sexo, apellido, nombre, edad, Pais_De_Origen) VALUES (:sexo, :apellido, :nombre, :edad, :pais_de_origen)");
+            $stmt = $pdo->prepare("INSERT INTO `actor` (`DNI_Actor`, `sexo`, `apellido`, `nombre`, `edad`, `Pais_De_Origen`)VALUES (:DNI_Actor, :sexo, :apellido, :nombre, :edad, :Pais_De_Origen)");
+            $stmt->bindValue(':DNI_Actor', $dni_actor, PDO::PARAM_INT);
             $stmt->bindValue(':sexo', $sexo);
             $stmt->bindValue(':apellido', $apellido);
             $stmt->bindValue(':nombre', $nombre);
@@ -23,14 +25,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "Actor añadido exitosamente.";
         } elseif ($action == "edit") {
             // Actualizar actor
-            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
+            $dni_actor = filter_input(INPUT_POST, 'DNI_Actor', FILTER_VALIDATE_INT);
             $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
             $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
             $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
             $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-            $stmt = $pdo->prepare("UPDATE actor SET sexo = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, Pais_De_Origen = :pais WHERE DNI_Actor = :dni");
+            $stmt = $pdo->prepare("UPDATE actor SET DNI_Actor = :DNI_Actor = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, pais_de_origen = :pais WHERE DNI_Actor = :dni");
+            $stmt -> bindValue (':DNI_Actor', $dni_actor);
             $stmt->bindValue(':sexo', $sexo);
             $stmt->bindValue(':apellido', $apellido);
             $stmt->bindValue(':nombre', $nombre);
@@ -41,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "Actor actualizado exitosamente.";
         } elseif ($action == "delete") {
             // Eliminar actor
-            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
+            $dni_actor = filter_input(INPUT_POST, 'DNI_Actor', FILTER_VALIDATE_INT);
 
             $stmt = $pdo->prepare("DELETE FROM actor WHERE DNI_Actor = :dni");
             $stmt->bindValue(':dni', $dni_actor, PDO::PARAM_INT);
@@ -70,7 +73,7 @@ $result = $pdo->query("SELECT * FROM actor");
 
     <!-- Formulario para agregar actores -->
     <form method="POST">
-        <input type="hidden" name="action" value="add">
+        <input type="number" name="DNI_Actor" placeholder="DNI" required>
         <input type="text" name="sexo" placeholder="Sexo" required>
         <input type="text" name="apellido" placeholder="Apellido" required>
         <input type="text" name="nombre" placeholder="Nombre" required>
