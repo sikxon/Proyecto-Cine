@@ -22,6 +22,8 @@
                 <li data-entity="personaje">Personaje</li>
                 <li data-entity="actor">Actor</li>
                 <li data-entity="empleados">Empleados</li>
+                <li data-entity="genero">Genero</li>
+                <li data-entity="pelicula">Pelicula</li>
             </ul>
         </nav>
     </header>
