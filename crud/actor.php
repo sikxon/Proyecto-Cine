@@ -7,15 +7,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         if ($action == "add") {
             // Insertar actor
-            $dni_actor = filter_input(INPUT_POST, 'DNI_Actor', FILTER_VALIDATE_INT);
             $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
             $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
             $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
             $pais_de_origen = filter_input(INPUT_POST, 'Pais_De_Origen', FILTER_SANITIZE_STRING);
 
-            $stmt = $pdo->prepare("INSERT INTO `actor` (`DNI_Actor`, `sexo`, `apellido`, `nombre`, `edad`, `Pais_De_Origen`)VALUES (:DNI_Actor, :sexo, :apellido, :nombre, :edad, :Pais_De_Origen)");
-            $stmt->bindValue(':DNI_Actor', $dni_actor, PDO::PARAM_INT);
+            $stmt = $pdo->prepare("INSERT INTO `actor` (`sexo`, `apellido`, `nombre`, `edad`, `Pais_De_Origen`)VALUES (:sexo, :apellido, :nombre, :edad, :Pais_De_Origen)");
             $stmt->bindValue(':sexo', $sexo);
             $stmt->bindValue(':apellido', $apellido);
             $stmt->bindValue(':nombre', $nombre);
@@ -25,15 +23,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "Actor añadido exitosamente.";
         } elseif ($action == "edit") {
             // Actualizar actor
-            $dni_actor = filter_input(INPUT_POST, 'DNI_Actor', FILTER_VALIDATE_INT);
             $sexo = filter_input(INPUT_POST, 'sexo', FILTER_SANITIZE_STRING);
             $apellido = filter_input(INPUT_POST, 'apellido', FILTER_SANITIZE_STRING);
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
             $edad = filter_input(INPUT_POST, 'edad', FILTER_VALIDATE_INT);
             $pais_de_origen = filter_input(INPUT_POST, 'pais_de_origen', FILTER_SANITIZE_STRING);
 
-            $stmt = $pdo->prepare("UPDATE actor SET DNI_Actor = :DNI_Actor = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, pais_de_origen = :pais WHERE DNI_Actor = :dni");
-            $stmt -> bindValue (':DNI_Actor', $dni_actor);
+            $stmt = $pdo->prepare("UPDATE actor SET sexo = :sexo, apellido = :apellido, nombre = :nombre, edad = :edad, pais_de_origen = :pais WHERE DNI_Actor = :dni");
             $stmt->bindValue(':sexo', $sexo);
             $stmt->bindValue(':apellido', $apellido);
             $stmt->bindValue(':nombre', $nombre);
@@ -73,7 +69,6 @@ $result = $pdo->query("SELECT * FROM actor");
 
     <!-- Formulario para agregar actores -->
     <form method="POST">
-        <input type="number" name="DNI_Actor" placeholder="DNI" required>
         <input type="text" name="sexo" placeholder="Sexo" required>
         <input type="text" name="apellido" placeholder="Apellido" required>
         <input type="text" name="nombre" placeholder="Nombre" required>
@@ -85,7 +80,7 @@ $result = $pdo->query("SELECT * FROM actor");
     <h2>Lista de Actores</h2>
     <table border="1">
         <tr>
-            <th>DNI</th>
+            <th>ID</th>
             <th>Sexo</th>
             <th>Apellido</th>
             <th>Nombre</th>
@@ -95,7 +90,7 @@ $result = $pdo->query("SELECT * FROM actor");
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
             <tr>
-                <td><?= htmlspecialchars($row['DNI_Actor']) ?></td>
+                <td><?= htmlspecialchars($row['ID_Actor']) ?></td>
                 <td><?= htmlspecialchars($row['sexo']) ?></td>
                 <td><?= htmlspecialchars($row['apellido']) ?></td>
                 <td><?= htmlspecialchars($row['nombre']) ?></td>
@@ -105,12 +100,12 @@ $result = $pdo->query("SELECT * FROM actor");
                     <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="dni_actor" value="<?= htmlspecialchars($row['DNI_Actor']) ?>">
+                        <input type="hidden" name="ID_actor" value="<?= htmlspecialchars($row['ID_Actor']) ?>">
                         <button type="submit">Eliminar</button>
                     </form>
                     <!-- Botón para editar -->
                     <button onclick="editActor(
-                        <?= htmlspecialchars($row['DNI_Actor']) ?>,
+                        <?= htmlspecialchars($row['ID_Actor']) ?>,
                         '<?= htmlspecialchars($row['sexo']) ?>',
                         '<?= htmlspecialchars($row['apellido']) ?>',
                         '<?= htmlspecialchars($row['nombre']) ?>',
@@ -129,7 +124,7 @@ $result = $pdo->query("SELECT * FROM actor");
 
             form.innerHTML = `
                 <input type="hidden" name="action" value="edit">
-                <input type="hidden" name="dni_actor" value="${dni}">
+                <input type="hidden" name="id_actor" value="${id}">
                 <input type="text" name="sexo" value="${sexo}" required>
                 <input type="text" name="apellido" value="${apellido}" required>
                 <input type="text" name="nombre" value="${nombre}" required>

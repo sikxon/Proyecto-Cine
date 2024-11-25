@@ -10,13 +10,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $nombre_cine = filter_input(INPUT_POST, 'nombre_cine', FILTER_SANITIZE_STRING);
             $direccion = filter_input(INPUT_POST, 'direccion', FILTER_SANITIZE_STRING);
             $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
-            $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
-            $stmt = $pdo->prepare("INSERT INTO Cine (nombre_cine, Direccion, telefono, ID_Empleados) VALUES (:nombre_cine, :direccion, :telefono, :id_empleados)");
+            $stmt = $pdo->prepare("INSERT INTO Cine (nombre_cine, Direccion, telefono) VALUES (:nombre_cine, :direccion, :telefono)");
             $stmt->bindValue(':nombre_cine', $nombre_cine);
             $stmt->bindValue(':direccion', $direccion);
             $stmt->bindValue(':telefono', $telefono);
-            $stmt->bindValue(':id_empleados', $id_empleados, PDO::PARAM_INT);
             $stmt->execute();
             echo "Cine añadido exitosamente.";
         } elseif ($action == "edit") {
@@ -25,13 +23,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $nombre_cine = filter_input(INPUT_POST, 'nombre_cine', FILTER_SANITIZE_STRING);
             $direccion = filter_input(INPUT_POST, 'direccion', FILTER_SANITIZE_STRING);
             $telefono = filter_input(INPUT_POST, 'telefono', FILTER_SANITIZE_STRING);
-            $id_empleados = filter_input(INPUT_POST, 'id_empleados', FILTER_VALIDATE_INT);
 
-            $stmt = $pdo->prepare("UPDATE Cine SET nombre_cine = :nombre_cine, Direccion = :direccion, telefono = :telefono, ID_Empleados = :id_empleados WHERE ID_Cine = :id_cine");
+            $stmt = $pdo->prepare("UPDATE Cine SET nombre_cine = :nombre_cine, Direccion = :direccion, telefono = :telefono WHERE ID_Cine = :id_cine");
             $stmt->bindValue(':nombre_cine', $nombre_cine);
             $stmt->bindValue(':direccion', $direccion);
             $stmt->bindValue(':telefono', $telefono);
-            $stmt->bindValue(':id_empleados', $id_empleados, PDO::PARAM_INT);
             $stmt->bindValue(':id_cine', $id_cine, PDO::PARAM_INT);
             $stmt->execute();
             echo "Cine actualizado exitosamente.";
@@ -69,7 +65,6 @@ $result = $pdo->query("SELECT * FROM Cine");
         <input type="text" name="nombre_cine" placeholder="Nombre del Cine" required>
         <input type="text" name="direccion" placeholder="Dirección" required>
         <input type="text" name="telefono" placeholder="Teléfono" required>
-        <input type="number" name="id_empleados" placeholder="ID del Empleado" required>
         <button type="submit">Añadir Cine</button>
     </form>
 
@@ -80,7 +75,6 @@ $result = $pdo->query("SELECT * FROM Cine");
             <th>Nombre</th>
             <th>Dirección</th>
             <th>Teléfono</th>
-            <th>ID Empleado</th>
             <th>Acciones</th>
         </tr>
         <?php while ($row = $result->fetch(PDO::FETCH_ASSOC)): ?>
@@ -89,7 +83,6 @@ $result = $pdo->query("SELECT * FROM Cine");
                 <td><?= htmlspecialchars($row['nombre_cine']) ?></td>
                 <td><?= htmlspecialchars($row['Direccion']) ?></td>
                 <td><?= htmlspecialchars($row['telefono']) ?></td>
-                <td><?= htmlspecialchars($row['ID_Empleados']) ?></td>
                 <td>
                     <!-- Botón para eliminar -->
                     <form method="POST" style="display:inline;">
@@ -103,7 +96,6 @@ $result = $pdo->query("SELECT * FROM Cine");
                         '<?= htmlspecialchars($row['nombre_cine']) ?>',
                         '<?= htmlspecialchars($row['Direccion']) ?>',
                         '<?= htmlspecialchars($row['telefono']) ?>',
-                        <?= htmlspecialchars($row['ID_Empleados']) ?>
                     )">Editar</button>
                 </td>
             </tr>
@@ -121,7 +113,6 @@ $result = $pdo->query("SELECT * FROM Cine");
                 <input type="text" name="nombre_cine" value="${nombre}" required>
                 <input type="text" name="direccion" value="${direccion}" required>
                 <input type="text" name="telefono" value="${telefono}" required>
-                <input type="number" name="id_empleados" value="${empleado}" required>
                 <button type="submit">Actualizar</button>
             `;
 

@@ -9,15 +9,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Agregar Personaje
             $rol = filter_input(INPUT_POST, 'rol', FILTER_SANITIZE_STRING);
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
-            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
+            $dni_actor = filter_input(INPUT_POST, 'id_actor', FILTER_VALIDATE_INT);
             $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
-            $stmt = $pdo->prepare("INSERT INTO Personaje (rol, nombre, DNI_Actor, ID_Pelicula) 
-                                    VALUES (:rol, :nombre, :dni_actor, :id_pelicula)");
+            $stmt = $pdo->prepare("INSERT INTO Personaje (rol, nombre, id_Actor, ID_Pelicula) 
+                                    VALUES (:rol, :nombre, :id_actor, :id_pelicula)");
             $stmt->execute([
                 ':rol' => $rol,
                 ':nombre' => $nombre,
-                ':dni_actor' => $dni_actor,
+                ':id_actor' => $dni_actor,
                 ':id_pelicula' => $id_pelicula
             ]);
             echo "Personaje añadido exitosamente.";
@@ -26,16 +26,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $id_personaje = filter_input(INPUT_POST, 'id_personaje', FILTER_VALIDATE_INT);
             $rol = filter_input(INPUT_POST, 'rol', FILTER_SANITIZE_STRING);
             $nombre = filter_input(INPUT_POST, 'nombre', FILTER_SANITIZE_STRING);
-            $dni_actor = filter_input(INPUT_POST, 'dni_actor', FILTER_VALIDATE_INT);
+            $dni_actor = filter_input(INPUT_POST, 'id_actor', FILTER_VALIDATE_INT);
             $id_pelicula = filter_input(INPUT_POST, 'id_pelicula', FILTER_VALIDATE_INT);
 
             $stmt = $pdo->prepare("UPDATE Personaje 
-                                    SET rol = :rol, nombre = :nombre, DNI_Actor = :dni_actor, ID_Pelicula = :id_pelicula 
+                                    SET rol = :rol, nombre = :nombre, ID_Actor = :id_actor, ID_Pelicula = :id_pelicula 
                                     WHERE ID_Personaje = :id_personaje");
             $stmt->execute([
                 ':rol' => $rol,
                 ':nombre' => $nombre,
-                ':dni_actor' => $dni_actor,
+                ':id_actor' => $dni_actor,
                 ':id_pelicula' => $id_pelicula,
                 ':id_personaje' => $id_personaje
             ]);
@@ -58,7 +58,7 @@ try {
     $stmt = $pdo->query("SELECT Personaje.ID_Personaje, Personaje.rol, Personaje.nombre, 
                           Actor.nombre AS Nombre_Actor, Pelicula.titulo AS Titulo_Pelicula 
                           FROM Personaje 
-                          JOIN Actor ON Personaje.DNI_Actor = Actor.DNI_Actor 
+                          JOIN Actor ON Personaje.ID_Actor = Actor.ID_Actor 
                           JOIN Pelicula ON Personaje.ID_Pelicula = Pelicula.ID_Pelicula");
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -82,13 +82,13 @@ try {
         <input type="hidden" name="action" value="add">
         <input type="text" name="rol" placeholder="Rol del Personaje" required>
         <input type="text" name="nombre" placeholder="Nombre del Personaje" required>
-        <select name="dni_actor" required>
+        <select name="id_actor" required>
             <option value="" disabled selected>Selecciona un Actor</option>
             <?php
             // Obtener actores disponibles
-            $actores = $conn->query("SELECT DNI_Actor, nombre FROM Actor");
+            $actores = $conn->query("SELECT ID_Actor, nombre FROM Actor");
             while ($actor = $actores->fetch(PDO::FETCH_ASSOC)) {
-                echo "<option value='{$actor['DNI_Actor']}'>{$actor['nombre']}</option>";
+                echo "<option value='{$actor['ID_Actor']}'>{$actor['nombre']}</option>";
             }
             ?>
         </select>
@@ -139,7 +139,7 @@ try {
     </table>
 
     <script>
-        function editPersonaje(id, rol, nombre, dni_actor, id_pelicula) {
+        function editPersonaje(id, rol, nombre, id_actor, id_pelicula) {
             const form = document.createElement('form');
             form.method = 'POST';
 
@@ -148,7 +148,7 @@ try {
                 <input type="hidden" name="id_personaje" value="${id}">
                 <input type="text" name="rol" value="${rol}" required>
                 <input type="text" name="nombre" value="${nombre}" required>
-                <input type="number" name="dni_actor" value="${dni_actor}" required>
+                <input type="number" name="id_actor" value="${id_actor}" required>
                 <input type="number" name="id_pelicula" value="${id_pelicula}" required>
                 <button type="submit">Actualizar</button>
             `;
